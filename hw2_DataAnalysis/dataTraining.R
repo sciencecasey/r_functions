@@ -1,0 +1,5 @@
+library(here)
+train = read.csv("MATLAB/Algs_Mod3_trainFeaturesExamples/train.csv")
+str(train)
+colnames(train)
+rownames(train)
