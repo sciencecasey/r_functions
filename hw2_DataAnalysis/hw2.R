@@ -1,7 +1,7 @@
 library(EnvStats)
 library(dplyr)
 library(formattable)
-
+kurtosis(iris$Sepal.Length[1:50,])
 
 
 testy = function(x, p = NULL){
