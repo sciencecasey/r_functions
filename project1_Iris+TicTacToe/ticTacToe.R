@@ -1,4 +1,4 @@
-library(methods)
+#library(methods)
 library("R6")
 game_board = R6Class("game_board", 
                      #' create a game board for tix tac toe and initialize to empty (NA) values
@@ -136,7 +136,7 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                                         #' an internal method to calculate the current score (called by winning function)
                                         #' @param locations a tic tac toe board
                                         #' @return a positive score if X is leading, negative score if O is leading, and 0 if it's a tie
-                                        scores = c(x <- 0, o <- 0)
+                                        scores = c(0, 0)
                                         #calculate the score across each rows
                                         row <- 1
                                         while(row<=3){
@@ -145,7 +145,7 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                                           scores = private$sumLine(lineX, lineO, scores)
                                           row = row+1
                                         }
-
+                                        
                                         #calculate score by columns
                                         col = 1
                                         while(col<=3){
@@ -154,12 +154,12 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                                           scores = private$sumLine(lineX, lineO, scores)
                                           col = col+1
                                         }
-
+                                        
                                         #get diagonal scores
                                         diagX = c(locations[1,1] == "X", locations[2,2] == "X",
-                                          locations[3,3] == "X")
+                                                  locations[3,3] == "X")
                                         diagO = c(locations[1,1] == "O", locations[2,2] == "O",
-                                          locations[3,3] == "O")
+                                                  locations[3,3] == "O")
                                         lineX = sum(diagX, na.rm = TRUE)
                                         lineO = sum(diagO, na.rm = TRUE)
                                         scores = private$sumLine(lineX, lineO, scores)
@@ -171,24 +171,26 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                                         lineX = sum(diagX, na.rm = TRUE)
                                         lineO = sum(diagO, na.rm = TRUE)
                                         scores = private$sumLine(lineX, lineO, scores)
-
+                                        
                                         #add in priorities
+                                        #add one for each corner or center
                                         priorities = c(locations[1,1], locations[1,3],
                                                        locations[2,2], locations[3,1],
                                                        locations[3,3])
-                                        x <- x+sum(priorities == "X", na.rm = TRUE)
-                                        o <- o+sum(priorities == "O", na.rm = TRUE)
+                                        scores[1] <- scores[1]+sum(priorities == "X", na.rm = TRUE)
+                                        scores[2] <- scores[2]+sum(priorities == "O", na.rm = TRUE)
                                         #add another for center (best spot)
                                         if(is.na(locations[2,2])){
                                           #would throw an error if checked with X and O
                                         }else{
                                           if(locations[2,2] == "X"){
-                                            x <- x+1
+                                            scores[1] <- scores[1]+1
                                           } else if(locations[2,2] == "O"){
-                                            o <- o+1
+                                            scores[2] <- scores[2]+1
+                                            cat(paste("O in center spot \n"))
                                           } 
                                         }
-                                        return(x-o)
+                                        return(scores[1] - scores[2])
                                       },
                                       sumLine = function(totX, totO, scores){
                                         #' internal method to add score for an individual line
@@ -202,25 +204,29 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                                           #x wins - 3 in a row
                                           x <- Inf
                                           return(c(x, o))
-                                        }else if(totO ==3){
+                                        }else if(totO == 3){
                                           #o wins, 3 in a row
                                           o <- Inf
                                           return(c(x, o))
                                         }else if(totX == 2 && totO == 0){
                                           #2 Xs alone in line, add 3
                                           x <- x+3
+                                          #cat(paste("Two Xs alone \n"))
                                         }else if(totO == 2 && totX == 0){
                                           #2 o's alone in line, add 3
                                           o <- o+3
+                                          #cat(paste("Two Os alone \n"))
                                         }else if(totX == 1 && totO == 0){
                                           #one X alone, add one
                                           x <- x+totX
+                                          #cat(paste("One X alone \n"))
                                         }else if(totO ==1 && totX == 0){
                                           #one O alone, add 1
                                           o <- o+totO
+                                          #cat(paste("One O alone \n"))
                                         }
                                         return(c(x,o))
-                                        }
+                                      }
                                       )
                       )
 
@@ -255,34 +261,38 @@ unique_score = function(score, board){
 }
 
 
-
+#Evaluate game states
+#board1
 game = tic_tac_toe$new()
 game$board$getBoard()
 game$moveO(1,1)
 game$moveX(1,3)
 game$moveO(2,2)
-game$winning()
 evals = unique_score(game$winning(), game$board$getBoard())
+#board2
 game$clear()
 game$moveO(1,1)
 game$moveX(1,3)
 game$moveO(3,1)
-game$winning()
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board3
 game$clear()
 game$moveO(1,1)
 game$moveX(1,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board4
 game$clear()
 game$moveO(2,2)
 game$moveX()
 game$moveO(2,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board5
 game$clear()
 game$moveO(2,2)
 game$moveX(2,1)
 game$moveO(3,1)
-evals = append(evals, game$winning())
+evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board6
 game$clear()
 game$moveO(3,1)
 game$moveX(1,3)
@@ -290,13 +300,16 @@ game$moveO(2,2)
 game$moveX(2,3)
 game$moveO(3,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board7
 game$clear()
 game$moveO(2,2)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board8
 game$clear()
 game$moveO(3,1)
 game$moveX(1,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board9
 game$clear()
 game$moveO(3,1)
 game$moveX(1,3)
@@ -304,19 +317,31 @@ game$moveO(1,1)
 game$moveX(3,2)
 game$moveO(3,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board10
+game$clear()
+game$moveO(1,1)
+game$moveO(3,1)
+game$moveX(2,1)
+game$moveX(2,2)
+game$moveO(2,3)
+evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board11
 game$clear()
 game$moveO(1,1)
 game$moveX(1,3)
 game$moveO(2,1)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board12
 game$clear()
 game$moveO(1,1)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board13
 game$clear()
 game$moveO(1,1)
 game$moveX(1,3)
-game$moveO(3,1)
+game$moveO(3,3)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
+#board14
 game$clear()
 game$moveO(3,1)
 evals = append(evals, unique_score(game$winning(), game$board$getBoard()))
@@ -324,4 +349,266 @@ game$clear()
 evals
 
 
+#put this into a binary tree
+binNode = R6Class("binNode", public = list(data = NULL, 
+                                           parent = NULL,
+                                           left = NULL,
+                                           right = NULL,
+                                           initialize = function(value){
+                                             #' @param value a value to store in the current node
+                                             #' creates a node without connecting it to a tree
+                                             self$data = value
+                                           },
+                                           hasChild = function(){
+                                             if(is.null(self$left)){
+                                               if(is.null(self$right)){
+                                                 return(FALSE)
+                                               }
+                                             }else{
+                                               return(TRUE)
+                                             }
+                                           },
+                                           hasLeft = function(){
+                                             return(!is.null(self$left))
+                                           },
+                                           hasRight = function(){
+                                             return(!is.null(self$right))
+                                           }))
 
+binTree = R6Class("binTree", public = list(root = NULL,
+                                           initialize = function(value){
+                                             #' create a binary tree from a single value or vector of values
+                                             #' @param value a numeric value or vector of numeric types
+                                             if(length(value) == 1){
+                                               self$root = binNode$new(value)
+                                             }else{
+                                               i = 2
+                                               self$root = binNode$new(value[1])
+                                               while(i<=length(value)){
+                                                 self$insert(value[i])
+                                                 i = i+1
+                                               }
+                                             }
+                                           },
+                                           isEmpty = function(){
+                                             #' @return boolean if the tree has any nodes
+                                             if(is.null(self$root)){
+                                               return(TRUE)
+                                             }else{
+                                               return(FALSE)
+                                             }
+                                           },
+                                           inOrderWalk = function(start = self$root){
+                                             #' recursive function that moves through the binary tree and 
+                                             #' prints in order of value
+                                             #' @param start default proceeds from root can be changed by user
+                                             if(is.null(start)){
+                                               return(start)
+                                             }else {
+                                               self$inOrderWalk(start$left) 
+                                               cat(paste(start$data), "\t")
+                                               self$inOrderWalk(start$right)
+                                             }
+                                           },
+                                           search = function(fromNode = self$root, key){
+                                             #' search for the value within the tree
+                                             #' @param fromNode default begin from root but can be overridden by user
+                                             #' @param key a numeric value to find within the tree
+                                             #' @return the tree node containing the value or a NULL object if not in tree
+                                             if(is.null(fromNode) || fromNode$data == key){
+                                               return(fromNode)
+                                             }else if(fromNode$data > key){
+                                               # looking for a smaller value, move left
+                                               fromNode = self$search(fromNode$left, key)
+                                             }else{
+                                               fromNode = self$search(fromNode$right, key)
+                                             }
+                                           },
+                                           getMin = function(fromNode = self$root){
+                                             #' @param fromNode the minimum value in subtree from the select node
+                                             #' @return the smallest node within the subtree
+                                             while(!is.null(fromNode$left)){
+                                               fromNode = fromNode$left
+                                             }
+                                             return(fromNode)
+                                           },
+                                           getMax = function(fromNode = self$root){
+                                             #' @param a node to use as root to find max within the subtree
+                                             #' @return the node with the largest value in the subtree
+                                             while(!is.null(fromNode$right)){
+                                               fromNode = fromNode$right
+                                             }
+                                             return(fromNode)
+                                           },
+                                           getSuccessor = function(node){
+                                             #' @param node the node for whom to find successor (next larger value)
+                                             #' @return the node with next largest value if there is one
+                                             if(!is.null(node$right)){
+                                               # get the smallest value in the right subtree
+                                               return(self$getMin(node$right))
+                                             }else if(!is.null(node$parent) && identical(node, node$parent$left)){
+                                               #a left child & leaf node, the parent is next larger value
+                                               return(node$parent)
+                                             }else{
+                                               #check if max value
+                                               maxie = self$getMax()
+                                               if(identical(node, maxie)){
+                                                 #largest value in tree
+                                                 cat(paste("No successor found", "\n"))
+                                                 return(NULL)
+                                               }
+                                               while(!is.null(node$parent) && identical(node, node$parent$right)){
+                                                 # move up the parents who are right children
+                                                 node = node$parent
+                                               }
+                                               return(node)
+                                             }
+                                           },
+                                           getPredecessor = function(fromNode){
+                                             #' @param fromNode the node to get the predecessor of
+                                             #' @return the node who is the predecessor (next smallest value)
+                                             if(!is.null(fromNode$left)){
+                                               fromNode = self$getMax(fromNode$left)
+                                               return(fromNode)
+                                             }else if(!is.null(fromNode$parent) && identical(fromNode, fromNode$parent$right)){
+                                               #a right child and leaf node, parent is the predecessor 
+                                               return(fromNode$parent)
+                                             }else{
+                                               #check if min value
+                                               minnie = self$getMin()
+                                               if(identical(fromNode, minnie)){
+                                                 #smallest value in tree
+                                                 cat(paste("No predecessor found", "\n"))
+                                                 return(NULL)
+                                               }
+                                               while(!is.null(fromNode$parent) && identical(fromNode,fromNode$parent$left)){
+                                                 # move up the parents who are left children
+                                                 fromNode = fromNode$parent
+                                               }
+                                               return(fromNode)
+                                             }
+                                           },
+                                           insert = function(value){
+                                             #' @param value a numeric value to add to the tree
+                                             node = self$root
+                                             parental = NULL
+                                             while(!is.null(node)){
+                                               parental = node
+                                               if(value<node$data){
+                                                 node = node$left
+                                               }else{
+                                                 node = node$right
+                                               }
+                                             }
+                                             newb = binNode$new(value)
+                                             #set parent pointer
+                                             newb$parent = parental
+                                             #set the new node as correct child
+                                             if(is.null(parental)){
+                                               #new node is the root
+                                               self$root = newb
+                                             }else if(value<parental$data){
+                                               parental$left = newb
+                                             } else{
+                                               parental$right = newb
+                                             }
+                                           },
+                                           delete = function(node){
+                                             #' delete a select node from the tree
+                                             #' @param node the node to delete
+                                             if(!node$hasChild()){
+                                               #direct delete, no children
+                                               if(identical(node, self$root)){
+                                                 self$root = NULL
+                                               } else if(identical(node, node$parent$left)){
+                                                 node$parent$left = NULL
+                                                 node$parent = NULL
+                                               } else{
+                                                 node$parent$right = NULL
+                                                 node$parent = NULL
+                                               }
+                                             }else if(!node$hasLeft()){
+                                               #only right child, switch them
+                                               private$swap(node, node$right)
+                                             }else if(!node$hasRight()){
+                                               #only left child
+                                               swap(node, node$left)
+                                             }else{
+                                               #2 children, get successor
+                                               succ = self$getMin(node$right)
+                                               if(!identical(succ$parent, node)){
+                                                 #not a direct child
+                                                 private$swap(succ, succ$right)
+                                                 succ$parent = node$parent
+                                                 #set right child
+                                                 succ$right = node$right
+                                                 succ$right$parent = succ
+                                               }
+                                               private$swap(node, succ)
+                                               #set left child
+                                               succ$left = node$left
+                                               succ$left$parent = succ
+                                             }
+                                           }
+                                           # print function doesn't work yet,
+                                           # print = function(node = self$root){
+                                           #   cat(paste(node$data))
+                                           #   if(is.null(node$parent)){
+                                           #     #print new line after
+                                           #     cat(paste("\n"))
+                                           #   }else{
+                                           #     temp = node
+                                           #     while(identical(temp, temp$parent$right)){
+                                           #       temp = temp$parent
+                                           #       if(identical(temp, self$root)){
+                                           #         #end of full level when direct right side of root
+                                           #         cat(paste("\n"))
+                                           #         break
+                                           #       }
+                                           #     }
+                                           #     #tabs between nodes
+                                           #     cat(paste("\t\t"))
+                                           #   }
+                                           #   #print next row
+                                           #   if(!is.null(node$left)){
+                                           #     self$print(node$left)
+                                           #   }
+                                           #   if(!is.null(node$right)){
+                                           #     self$print(node$right)
+                                           #   }
+                                           # }
+), private = list(
+  swap = function(u,v){
+    #' an internal function to swap the values of v with u and leaves u unattached
+    #' used within a delete method
+    #' @param u a node to detach
+    #' @param v a node to put into u's place
+    temp = v
+    if(identical(u, self$root)){
+      self$root = v
+    }else if(identical(u, u$parent$left)){
+      #left child
+      u$parent$left = v
+    }else{
+      u$parent$right = v
+    }
+    v$parent = u$parent
+    #u is now unattached
+    # #switch u into v's spot
+    # if(temp = self$root){
+    #   self$root = u
+    # }else if(temp == temp$parent$left){
+    #   temp$parent$left = u
+    # }else{
+    #   temp$parent$right = u
+    # }
+    # u$parent = temp$parent
+  }
+)
+)
+
+ticTree = binTree$new(evals)
+ticTree$root
+ticTree$getMin()
+ticTree$getMax()
+evals

@@ -11,7 +11,7 @@ summary(df)
 # built in function takes the df of data, 
 # the mean vector of the distribution & covariance matrix as inputs
 mahalanobis(df, colMeans(df, na.rm = TRUE), cov(df, method = "pearson"))
-mahalanobis(df)
+#mahalanobis(df)
 # multiple distances given, one for each row of the data frame 
 # add col of distances to df
 
