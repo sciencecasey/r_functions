@@ -1,13 +1,18 @@
 library(lattice)
 library(latticeExtra)
 library(car)
-synthetic_data <- function(x, n, dist = NULL){
+synthetic_data <- function(x, n, dist = NULL, centered = TRUE){
   #'@param x a feature vector from which to generate more data
   #'@param n the number of synthetic datas to create
   #'@return positive numbers normalized to fit the data
   #'@param dist if entered as "gaussian" or "normal" the random numbers will
+  #'@param centered if the data is centered around the mean
   #' be generated from a normal distribution.  default uses uniformly distributed 
   #' random values
+  if(!centered){
+    # center the data
+    x <- sapply(x, normalize)
+  }
   cols = dim(x)[2]
   rows = dim(x)[1]
   minnie = sapply(x, min)
@@ -16,7 +21,7 @@ synthetic_data <- function(x, n, dist = NULL){
   mean = colMeans(x)
   if(is.null(dist)){
     #generate uniformly distributed numbers between 1 and 100 for each col
-    syn = runif((n*cols), 0, 100)
+    syn = runif((n*cols))
     # match dimensions
     dim(syn)<- c(n, cols)
   }else if(dist == "normal" || dist == "gaussian"){
@@ -29,52 +34,23 @@ synthetic_data <- function(x, n, dist = NULL){
     break
   }
   syn = as.matrix(syn)
-  syn = syn
   cov = as.matrix(cov)
   syn = syn %*% cov # multiply by covariance matrix to orient
   syn = as.data.frame(syn)
   syn_min = sapply(syn, min)
   syn_max = sapply(syn, max)
   syn = ((syn - syn_min)/(syn_max-syn_min))*(maxie - minnie) + minnie
-  syn = syn # transpose
   #center around the mean
   mu = colMeans(syn)-colMeans(x)
   syn = syn - mu
   return(abs(syn))
 }
-
-synth_setosa <- synthetic_data(iris[(1:50), -5], 100)
+iris_centerd <- sapply(iris[-5], normalize)
+synth_setosa <- synthetic_data(iris_centerd[(1:50), -5], 100)
 summary(synth_setosa)
-summary(iris[(1:50), -5])
-synth_versi <- synthetic_data(iris[(51:100), -5], 100)
-synth_virgi <- synthetic_data(iris[(101:150), -5], 100)
-# synth_swidth <- c(synthetic_data(iris$Sepal.Width[1:50], 100), 
-#                  synthetic_data(iris$Sepal.Width[51:100], 100),
-#                  synthetic_data(iris$Sepal.Width[101:150], 100))
-# summary(iris$Sepal.Width[1:50])
-# summary(synth_swidth[1:100])
-# sd(synth_swidth[1:100]) 
-# sd(iris$Sepal.Width[1:50]) #SD is .3790644
-# sd(c(iris$Sepal.Width, synth_swidth)) # the SD is .527
-# 
-# synth_slength <- c(synthetic_data(iris$Sepal.Length[1:50], 100), 
-#                  synthetic_data(iris$Sepal.Length[51:100], 100),
-#                  synthetic_data(iris$Sepal.Length[101:150], 100))
-# summary(iris$Sepal.Length[1:50])
-# summary(synth_slength[1:100])
-# 
-# synth_plength <- c(synthetic_data(iris$Petal.Length[1:50], 100), 
-#                   synthetic_data(iris$Petal.Length[51:100], 100),
-#                   synthetic_data(iris$Petal.Length[101:150], 100))
-# summary(iris$Petal.Length[1:50])
-# summary(synth_plength[1:100])
-# summary(c(iris$Petal.Length[1:50], synth_plength[1:100]))
-# 
-# synth_pwidth <- c(synthetic_data(iris$Petal.Width[1:50], 100), 
-#                   synthetic_data(iris$Petal.Width[51:100], 100),
-#                   synthetic_data(iris$Petal.Width[101:150], 100))
-# summary(iris$Petal.Width[1:50])
-# summary(synth_pwidth[1:100])
+summary(iris_centerd[(1:50), -5])
+synth_versi <- synthetic_data(iris_centerd[(51:100), -5], 100)
+synth_virgi <- synthetic_data(iris_centerd[(101:150), -5], 100)
 
 #create matching dataframe
 colnames(iris)
@@ -89,7 +65,57 @@ dim(synth)
 synth <- as.data.frame(synth)
 
 #combine
-more_iris <- rbind(iris, synth)
+temp <- cbind(iris_centerd, Species = iris$Species)
+more_iris <- rbind(temp, synth)
+
+# synthetic data from testy analysis
+iris_centerd <- as.data.frame(temp)
+pdf("output/synthetic_data_testyFunc.pdf")
+plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length, 
+     col = "red", cex = .2, ylim = c(-1, 2), xlim = c(-1, 2),
+     xlab = "Sepal Length", ylab = "Petal Width", main = "Testy Function Synthetic Data")
+points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
+summary(iris_centerd)
+summary(synth[-5])
+dev.off()
+
+# compare with built in functions
+# make synthetic
+iris_normed <- cbind(runif(300), runif(300), runif(300), runif(300))
+# multiply by the covariance of centered iris data
+covy = cov(iris_centerd[1:50,-5])
+iris_normed[1:100,] <- as.matrix(iris_normed[1:100,]) %*% covy
+covy = cov(iris_centerd[51:100,-5])
+iris_normed[101:200,] <- as.matrix(iris_normed[101:200,]) %*% covy
+covy = cov(iris_centerd[101:150,-5])
+iris_normed[201:300,] <- as.matrix(iris_normed[201:300,]) %*% covy
+# min max normalizaion
+iris_normed <- cbind(normalize(iris_normed[,1], min = min(iris_centerd[,1]), max = max(iris_centerd[,1])), 
+                     normalize(iris_normed[,2], min = min(iris_centerd[,2]), max = max(iris_centerd[,2])), 
+                     normalize(iris_normed[,3], min = min(iris_centerd[,3]), max = max(iris_centerd[,3])),
+                     normalize(iris_normed[,4], min = min(iris_centerd[,4]), max = max(iris_centerd[,4])))
+# center around the iris_centerd mean
+colMeans(iris_centerd[-5])
+colMeans(iris_normed)
+diff <- colMeans(iris_normed) - colMeans(iris_centerd[-5])
+iris_normed <- iris_normed - diff
+
+# This one worked!!
+Species = c(rep("setosa", 100), rep("versicolor", 100), rep("virginica", 100))
+dim(iris_normed)
+iris_normed <- cbind(iris_normed, Species)
+colnames(iris_normed) <- colnames(iris)
+colnames(iris_normed)
+dim(iris_normed)
+iris_normed <- as.data.frame(iris_normed)
+iris_centerd <- as.data.frame(iris_centerd)
+pdf("output/synthetic_data_prebuildFunc.pdf")
+plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length, col = "red", cex = .2, 
+     ylim = c(-1, 2), xlim = c(-1, 2), xlab = "Sepal Length", ylab = "Petal Width", 
+     main = "Pre-Built Function Synthetic Data")
+points(iris_normed$Petal.Width ~ iris_normed$Sepal.Length, col = "blue", cex = .2)
+dev.off()
+
 
 # Plots
 #scatter3d(more_iris$Petal.Width~more_iris$Sepal.Length|Species,
@@ -97,22 +123,44 @@ more_iris <- rbind(iris, synth)
 #          more_iris$Petal.Width, more_iris$Sepal.Length, 
 #          ellipsoid = TRUE)
 
-scatterplot(synth$Petal.Width~synth$Sepal.Length,
-            groups = levels(synth$Species),
+more_iris$type <- c(rep("original_centered", 150), rep("synthetic", 300))
+str(synth)
+synth$Species <- as.factor(synth$Species)
+iris_centerd$Species <- iris$Species
+# scatterplot(synth$Petal.Width~synth$Sepal.Length,
+#             groups = levels(synth$Species),
+#             xlim = c(-1, 5),
+#             ylim = c(-1, 2),
+#             boxplots = "",
+#             grid = FALSE,
+#             ellipse = TRUE)
+pdf = ("output/Testy_ellipse.pdf")
+scatterplot(iris_centerd$Petal.Width~iris_centerd$Sepal.Length,
+            groups = levels(iris_centerd$Species),
+            xlim = c(-1, 3),
+            ylim = c(-1, 2),
+            xlab = "Sepal Length",
+            ylab = "Petal Width",
+            main = "Testy Synthetic overlaid on Iris",
             boxplots = "",
+            #col = "red", # carPalette()[5],
             grid = FALSE,
-            ellipse = TRUE)
-scatterplot(more_iris$Petal.Width~more_iris$Sepal.Length,
-            groups = levels(more_iris$Species),
+            ellipse = list(TRUE, fill = FALSE, robust = TRUE))
+points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
+dev.off()
+
+scatterplot(iris_normed$Petal.Width~iris_normed$Sepal.Length,
+            groups = levels(iris_normed$Species),
+            xlim = c(-1, 5),
+            ylim = c(-1, 2),
             boxplots = "",
             grid = FALSE,
             ellipse = TRUE)
 
 dataEllipse()
-meany = colMeans(iris[-5])
-iris_norm = iris[-5] - meany 
-plot(iris$Petal.Width ~ iris$Sepal.Length, col = "red", cex = .2, ylim = c(0, 4), xlim = c(2, 8))
-points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
+
+
+
 
 # turning on robust makes the ellipse drawn with covariance matrix
 dataEllipse(outlier_iris$Petal.Width, outlier_iris$Petal.Length,
