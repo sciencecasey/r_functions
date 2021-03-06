@@ -21,7 +21,7 @@ for(row in seq(1, 1000)){
 #remove the first row from new matrix (used for initialization)
 newmat = newmat[-1,]
 dim(newmat)
-write.csv(newmat, file = "hw2_DataAnalysis/output/numbers_matrix_entries.csv")
+#write.csv(newmat, file = "hw2_DataAnalysis/output/numbers_matrix_entries.csv")
 # don't need to close a csv exporter
 
 # create individual matrices for indeces
@@ -54,7 +54,7 @@ mat22 = t(newmat[589:616,])
 mat22 = rot90(mat22, -1)
 
 library(lattice)
-pdf("numbers_plots.pdf")
+#pdf("numbers_plots.pdf")
 levelplot(mat2, col.regions = gray(0:100/100))
 levelplot(mat1, col.regions = gray(0:100/100))
 levelplot(mat17, col.regions = gray(0:100/100))
@@ -65,4 +65,4 @@ levelplot(mat22, col.regions = gray(0:100/100))
 levelplot(mat7, col.regions = gray(0:100/100))
 levelplot(mat11, col.regions = gray(0:100/100))
 levelplot(mat12, col.regions = gray(0:100/100))
-dev.off()
+#dev.off()

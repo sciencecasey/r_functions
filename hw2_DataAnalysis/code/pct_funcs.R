@@ -33,11 +33,8 @@ X_pcacov <- cbind(X_pcacov, Species)
 plot(X_pcacov, col =c("red", "green", "blue"))
 X_pcacov <- as.data.frame(X_pcacov)
 plot(X_pcacov)
-scatterplot(X_pcacov)
-principal <- function(data){
-  R = cor(data)
-  prinObj = princomp(data)
-  vec = eigen(R)$vectors
-  vals = eigen(R)$values
-  
-}
+plot(X_pcacov[,1], 
+     main = "First principle component",
+     ylab = "PCA 1", 
+     col = rep(c("red", "green", "blue"), each = 50))
+
