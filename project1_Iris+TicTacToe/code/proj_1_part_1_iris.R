@@ -9,13 +9,13 @@ visIris = iris #import the dataset into R
 str(visIris) 
 typeof(visIris) #contains a list -- mixed dataset
 anyNA(visIris$Sepal.Length || visIris$Sepal.Width || 
-        visIris$Petal.Length || visIris$Petal.Width || 
-        visIris$Species) #check for missing values 
+          visIris$Petal.Length || visIris$Petal.Width || 
+          visIris$Species) #check for missing values 
 
 # 2.
 # Implement an algorithm to visualize two aspects of the dataset
 # open pdf graphics creator
-pdf("iris_features_CRichards.pdf", 
+pdf("output/iris_features_CRichards.pdf", 
     width = 8, height = 8, #set aspect ratio on paper (inches) 
     colormodel = "cmyk", 
     bg = "white", 
@@ -44,7 +44,7 @@ xyplot(data = visIris,
        ylab = "Petal Length",
        xlab = "Sepal Length",
        aspect = 1
-       )
+)
 xyplot(data = visIris,
        visIris$Petal.Length~visIris$Petal.Width,
        type = 'p',
@@ -143,7 +143,7 @@ visIris[order(visIris$Sepal.Width),]
 visIris[order(visIris$Petal.Width),]
 
 
-# next script is called mahalanobis_iris.R
+
 visIris = iris
 summaryStats(visIris[,1:4])
 fullSumSetosa <- summaryFull(visIris[1:50,1:4])
@@ -152,8 +152,14 @@ fullSumVirginica <- summaryFull(visIris[101:150, 1:4])
 str(fullSumSetosa[,1])
 
 
+# Checking above & visualizing with built-in functions
 combinedSum <- cbind(Set_PetalLength = fullSumSetosa[,1], Versi_PetalLength= fullSumVersicolor[,1], Ver_PetalLength = fullSumVirginica[,1])
 # combinedSum <- cbind(combinedSum, Mean_PL = rowMeans(combinedSum[,1:3]), Var_PL = diag(var(x = combinedSum[])))
 combinedSum <- cbind(combinedSum, Set_PetalWidth = fullSumSetosa[,2], Versi_PetalWidth= fullSumVersicolor[,2], Ver_PetalWidth = fullSumVirginica[,2])
 combinedSum <- cbind(combinedSum, Set_SepalLength = fullSumSetosa[,3], Versi_SepalLength= fullSumVersicolor[,3], Ver_SepalLength = fullSumVirginica[,3])
 combinedSum <- cbind(combinedSum, Set_SepalWidth = fullSumSetosa[,4], Versi_SepalWidth= fullSumVersicolor[,4], Ver_SepalWidth = fullSumVirginica[,4])
+
+rm(combinedSum)
+rm(fullSumSetosa)
+rm(fullSumVersicolor)
+rm(fullSumVirginica)

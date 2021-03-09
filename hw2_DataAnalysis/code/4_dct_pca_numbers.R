@@ -1,6 +1,6 @@
 # created DCT_2 function
-source("Learn_R/functions/DCT_2.R")
-source("Learn_R//functions/pca_routine.R")
+source("../functions/DCT_2.R")
+source("../functions/pca_routine.R")
 
 # a. take DCT of each matrix
 dct_mat1 <- DCT_2(mat1)
@@ -15,9 +15,10 @@ dct_mat17 <- DCT_2(mat17)
 dct_mat22 <- DCT_2(mat22)
 
 # make a list of these matrices
-all_mat <- list(dct_mat1, dct_mat2, dct_mat4, dct_mat7, 
-                dct_mat8, dct_mat9, dct_mat11, dct_mat12, 
+all_mat <- list(dct_mat1, dct_mat2, dct_mat4, dct_mat7,
+                dct_mat8, dct_mat9, dct_mat11, dct_mat12,
                 dct_mat17, dct_mat22)
+
 
 # b. extract horizontal, vertical, and diagonal coefficients of the transforms
 #vert_vals <- matrix(rep(0, 28), ncol = 28)
@@ -26,14 +27,14 @@ all_mat <- list(dct_mat1, dct_mat2, dct_mat4, dct_mat7,
 hc <- matrix(rep(0, 224), nrow = 224) # hold the number of coefficients in each mast
 vc <- matrix(rep(0, 224), nrow = 224)
 dc <- matrix(rep(0, 335), nrow = 335) # the number of nonzero coef in diag is more
-for (i in seq(1, length(all_mat))){
+for (i in seq(1, length(newmat))){
   horiz = get_horizontal(all_mat[[i]]) # matrix of zeros in mask locations
   coef <- horiz!= 0
   hcoef <- horiz[coef] # place nonzero coefficients into a single vector
   hc <- cbind(hc, hcoef)
-  vert <- get_vertical(all_mat[[i]]) 
+  vert <- get_vertical(all_mat[[i]])
   coef <- vert != 0
-  vcoef <- vert[coef] 
+  vcoef <- vert[coef]
   vc <- cbind(vc, vcoef)
   diag <- get_diagonal(all_mat[[i]])
   coef <- diag!= 0
@@ -116,9 +117,9 @@ pcaV <- vc %*% cv_pc$vec[,1:vkeep]
 cl <-colors()
 colur <- runif(10, max = 657)
 cl <- cl[colur]
-plot(pcaV, col = cl, lwd = 3)
-plot(pcaD, col = cl, lwd = 3)
-plot(pcaH, col = cl, lwd = 3)
+plot(pcaV[,2]~pcaV[,1], col = cl, lwd = 3)
+points(pcaD[,2]~pcaD[,1], col = cl, lwd = 3)
+points(pcaH[,2]~pcaH[,1], col = cl, lwd = 3)
 # Try boxplots
 th = t(pcaH)
 tv = t(pcaV)
@@ -126,39 +127,6 @@ td = t(pcaD)
 boxplot(th, col = cl, lwd = 3, horizontal = TRUE, main = "Horizontal Components to 95%")
 boxplot(td, col = cl, lwd = 3, horizontal = TRUE, main = "Diagonal Components to 95%")
 boxplot(tv, col = cl, lwd = 3, horizontal = TRUE, main = "Vertical Components to 95%")
-#plot(c(pcaD, pcaH, pcaV))
-# plot(pcaD[1:3,], col = "red", xlim = c(-20000, 5000), ylim = c(-80000, 5000), main = "PCA separations")
-# plot(pcaD[1:3,], col = "red", xlim = c(-1000, 1000), ylim = c(-1000, 1000), main = "PCA separations")
-# points(pcaD[4:6,], col = "green")
-# points(pcaD[7:9,], col = "blue")
-# points(pcaH[1:4,], col = "red")
-# points(pcaD[10:12,], col = "yellow")
-# points(pcaD[13:15,], col = "purple")
-# points(pcaD[16:18,], col = "brown")
-# points(pcaD[19:21,], col = "black")
-# points(pcaD[22:24,], col = "gray")
-# points(pcaD[25:27,], col = "pink")
-# points(pcaD[28:30,], cex = .5)
-# points(pcaV[1:2,],col = "red")
-# points(pcaV[3:4,], col = "green")
-# points(pcaV[5:6], col = "blue")
-# points(pcaV[7:8,], col = "yellow")
-# points(pcaV[9:10,], col= "purple")
-# points(pcaV[11:12,], col = "brown")
-# points(pcaV[13:14,], col = "black")
-# points(pcaV[15:16,], col = "gray")
-# points(pcaV[17:18,], col = "pink")
-# points(pcaV[19:20,], cex = .5)
-# points(pcaH[1:4,], col = "red")
-# points(pcaH[5:8], col = "green")
-# points(pcaH[9:12,], col = "blue")
-# points(pcaH[13:16,], col = "yellow")
-# points(pcaH[17:20,], col = "purple")
-# points(pcaH[21:24,], col = "brown")
-# points(pcaH[25:28,], col = "black")
-# points(pcaH[29:32,], col = "gray")
-# points(pcaH[31:36,], col = "pink")
-# points(pcaH[37:40,], cex = .5)
 
 
 

@@ -5,7 +5,7 @@ library(lattice)
 
 # serialize the data to load faster next time (for workin on hw)
 # saveRDS(train, file = "Learn_R/hw2_DataAnalysis/input/training_data.rds")
-train = readRDS("hw2_DataAnalysis/input/training_data.rds")
+train = readRDS("input/training_data.rds")
 
 # initialize matrix for the output
 newmat = matrix(rep(1, 28), ncol = 28)

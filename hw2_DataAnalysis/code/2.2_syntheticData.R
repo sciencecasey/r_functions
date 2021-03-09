@@ -7,7 +7,7 @@ synthetic_data <- function(x, n, dist = NULL, centered = TRUE){
   #'@return positive numbers normalized to fit the data
   #'@param dist if entered as "gaussian" or "normal" the random numbers will
   #'@param centered if the data is centered around the mean
-  #' be generated from a normal distribution.  default uses uniformly distributed 
+  #' be generated from a normal distribution.  default uses uniformly distributed
   #' random values
   if(!centered){
     # center the data
@@ -71,7 +71,7 @@ more_iris <- rbind(temp, synth)
 # synthetic data from testy analysis
 iris_centerd <- as.data.frame(temp)
 pdf("output/synthetic_data_testyFunc.pdf")
-plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length, 
+plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length,
      col = "red", cex = .2, ylim = c(-1, 2), xlim = c(-1, 2),
      xlab = "Sepal Length", ylab = "Petal Width", main = "Testy Function Synthetic Data")
 points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
@@ -90,8 +90,8 @@ iris_normed[101:200,] <- as.matrix(iris_normed[101:200,]) %*% covy
 covy = cov(iris_centerd[101:150,-5])
 iris_normed[201:300,] <- as.matrix(iris_normed[201:300,]) %*% covy
 # min max normalizaion
-iris_normed <- cbind(normalize(iris_normed[,1], min = min(iris_centerd[,1]), max = max(iris_centerd[,1])), 
-                     normalize(iris_normed[,2], min = min(iris_centerd[,2]), max = max(iris_centerd[,2])), 
+iris_normed <- cbind(normalize(iris_normed[,1], min = min(iris_centerd[,1]), max = max(iris_centerd[,1])),
+                     normalize(iris_normed[,2], min = min(iris_centerd[,2]), max = max(iris_centerd[,2])),
                      normalize(iris_normed[,3], min = min(iris_centerd[,3]), max = max(iris_centerd[,3])),
                      normalize(iris_normed[,4], min = min(iris_centerd[,4]), max = max(iris_centerd[,4])))
 # center around the iris_centerd mean
@@ -109,32 +109,20 @@ colnames(iris_normed)
 dim(iris_normed)
 iris_normed <- as.data.frame(iris_normed)
 iris_centerd <- as.data.frame(iris_centerd)
-pdf("output/synthetic_data_prebuildFunc.pdf")
-plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length, col = "red", cex = .2, 
-     ylim = c(-1, 2), xlim = c(-1, 2), xlab = "Sepal Length", ylab = "Petal Width", 
+#pdf("output/synthetic_data_prebuildFunc.pdf")
+plot(iris_centerd$Petal.Width ~ iris_centerd$Sepal.Length, col = "red", cex = .2,
+     ylim = c(-1, 2), xlim = c(-1, 2), xlab = "Sepal Length", ylab = "Petal Width",
      main = "Pre-Built Function Synthetic Data")
 points(iris_normed$Petal.Width ~ iris_normed$Sepal.Length, col = "blue", cex = .2)
-dev.off()
+#dev.off()
 
 
 # Plots
-#scatter3d(more_iris$Petal.Width~more_iris$Sepal.Length|Species,
-#          data = more_iris,
-#          more_iris$Petal.Width, more_iris$Sepal.Length, 
-#          ellipsoid = TRUE)
-
 more_iris$type <- c(rep("original_centered", 150), rep("synthetic", 300))
 str(synth)
 synth$Species <- as.factor(synth$Species)
 iris_centerd$Species <- iris$Species
-# scatterplot(synth$Petal.Width~synth$Sepal.Length,
-#             groups = levels(synth$Species),
-#             xlim = c(-1, 5),
-#             ylim = c(-1, 2),
-#             boxplots = "",
-#             grid = FALSE,
-#             ellipse = TRUE)
-pdf = ("output/Testy_ellipse.pdf")
+#pdf = ("output/Testy_ellipse.pdf")
 scatterplot(iris_centerd$Petal.Width~iris_centerd$Sepal.Length,
             groups = levels(iris_centerd$Species),
             xlim = c(-1, 3),
@@ -147,28 +135,33 @@ scatterplot(iris_centerd$Petal.Width~iris_centerd$Sepal.Length,
             grid = FALSE,
             ellipse = list(TRUE, fill = FALSE, robust = TRUE))
 points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
-dev.off()
-
+#dev.off()
+str(iris_centerd)
+iris_normed$Species <- as.factor(iris_normed$Species)
+iris_normed$Sepal.Length <- as.numeric(iris_normed$Sepal.Length)
+iris_normed$Sepal.Width <- as.numeric(iris_normed$Sepal.Width)
+iris_normed$Petal.Length <- as.numeric(iris_normed$Petal.Length)
+iris_normed$Petal.Width <- as.numeric(iris_normed$Petal.Width)
 scatterplot(iris_normed$Petal.Width~iris_normed$Sepal.Length,
             groups = levels(iris_normed$Species),
-            xlim = c(-1, 5),
+            xlim = c(-1, 3),
             ylim = c(-1, 2),
+            xlab = "Sepal Length",
+            ylab = "Petal Width",
+            main = "Testy Synthetic overlaid on Normalized Iris",
             boxplots = "",
             grid = FALSE,
-            ellipse = TRUE)
-
-dataEllipse()
-
-
+            ellipse = list(TRUE, fill = FALSE, robust = TRUE))
+points(synth$Petal.Width ~ synth$Sepal.Length, col = "blue", cex = .2)
 
 
 # turning on robust makes the ellipse drawn with covariance matrix
-dataEllipse(outlier_iris$Petal.Width, outlier_iris$Petal.Length,
+dataEllipse(iris_centerd$Petal.Width, iris_centerd$Petal.Length,
             robust = TRUE,
-            groups = levels(outlier_iris$Species))
-dataEllipse(outlier_iris$Petal.Length, outlier_iris$Sepal.Length, levels=0.1*1:9, 
-            ellipse.label=0.1*1:9, lty=2, fill=TRUE, fill.alpha=0.1)
-m = glm(outlier_iris$Petal.Length~outlier_iris$Species + outlier_iris$Petal.Width)
-print(summary(m))
-confidenceEllipse(m) # how to I separate by goup? 
+            groups = iris_centerd$Species)
+#dataEllipse(outlier_iris$Petal.Length, outlier_iris$Sepal.Length, levels=0.1*1:9,
+#            ellipse.label=0.1*1:9, lty=2, fill=TRUE, fill.alpha=0.1)
+#m = glm(outlier_iris$Petal.Length~outlier_iris$Species + outlier_iris$Petal.Width)
+#print(summary(m))
+#confidenceEllipse(m) # how to I separate by goup?
 
