@@ -1,8 +1,9 @@
 #library(methods)
 library("R6")
 game_board = R6Class("game_board", 
-                     #' create a game board for tix tac toe and initialize to empty (NA) values
+                     #' create a game board for tic tac toe and initialize to empty (NA) values
                      #' has public methods take(), getBoard(), getEmpties(), and clearBoard()
+                     #' @author Casey Jayne Richards
                      public = list(
                          take = function(player, row, col){
                              #' the character string(player) to place into row and column on the board
@@ -22,11 +23,11 @@ game_board = R6Class("game_board",
                              }
                          },
                          getBoard = function(){
-                             #' returns the board with current characters
+                             #' @return the board with current characters
                              return(private$locations)
                          },
                          getEmpties = function(){
-                             #' return a boolean matrix with free spaces represented as TRUE
+                             #'@return a boolean matrix with free spaces represented as TRUE
                              return(private$empties)
                          },
                          clearBoard = function(){
@@ -44,6 +45,7 @@ game_board = R6Class("game_board",
 
 
 tic_tac_toe = R6Class("ticTacToe", public = list(
+    #'@author Casey Jayne Richards
     board = game_board$new(),
     initialize = function(){
         #'creates a new tic tac toe game with a public board and 
@@ -67,6 +69,8 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
     },
     # alternative, conditional best
     smartMoveX = function(){
+        #'checks if X can win as first option, then if X can block O from winning
+        #'if neither available, moves according to priority
         options = self$board$getEmpties()
         # check if the X position can win
         # start with rows
@@ -289,6 +293,7 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
         print(self$board$getBoard())
     },
     clear = function(){
+        #' empties the current game
         self$board$clearBoard()
         self$board$getBoard() #print the board
     }), 
@@ -322,7 +327,7 @@ tic_tac_toe = R6Class("ticTacToe", public = list(
                 }
             }
             #should never get here
-            cat(paste("No available space found"))
+            cat(paste("No available space found \n"))
         },
         getScore = function(locations){
             #' an internal method to calculate the current score (called by winning function)
@@ -487,6 +492,7 @@ game$winning()
 
 # try to play X
 game <- tic_tac_toe$new()
+game$board$getBoard()
 game$moveO(2,2)
 game$smartMoveX()
 game$moveO(1,2)

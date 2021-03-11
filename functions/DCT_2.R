@@ -28,6 +28,12 @@ DCT_2 = function(B){
 }
 
 get_b = function(k, N){
+  #'used by the DCT_2 function
+  #'@param k the numeric iterator passed automatically
+  #'@param N the dimension of the square matrix
+  #''@author Casey Jayne Richards 
+  #'credit to K.R. Rao for the Math behind this function & 
+  #'Dr. Ben Rodriguez for assistance with structure
   if (k ==0){
     b = 1/sqrt(N)
   }else{
