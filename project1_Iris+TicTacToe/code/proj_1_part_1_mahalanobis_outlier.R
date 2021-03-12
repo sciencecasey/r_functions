@@ -2,9 +2,11 @@
 library(dplyr)
 library(lattice)
 library(here)
+library(EnvStats)
 library(car)
 # import self-made function to return 
-source(here("../functions/testy_testStats.R"))
+# source(here("../functions/testy_testStats.R")) # Casey's computer
+source(here("testy_testStats.R")) # if in same folder
 
 # segregate table by class 
 classifying_iris <- as_tibble(iris[1:50,])
@@ -31,7 +33,7 @@ one_mahl <- function(x){
     #'@param x a vector of type numeric
     #'uses variance & mean to calculate mahalanobis distance
     #'@return vector of distances
-    dist = (x - mean(x))^2*var(x)
+    dist = (x - mean(x))^2/var(x)
     return(dist)
 }
 
@@ -321,6 +323,34 @@ no_out_iris <- as_tibble(no_out_iris)
 no_out_iris[,1:4] <- no_out_iris[,1:4] %>% mutate_if(is.character,as.numeric)
 no_out_iris <- no_out_iris %>% mutate_if(is.character,as.factor)
 str(no_out_iris)
+
+# compare with function written across features
+# source("../functions/mahal_remove.R") # Casey's computer
+source("mahal_remove.R")
+no_out_across <- mahal_remove(data = classifying_iris, i = 1:12, alpha = .01)
+# across features species
+spec <- c(rep("setosa", length(no_out_across$Setosa_PetLength)), rep("versicolor", length(no_out_across$Versi_PetLength)), rep("virginica", length(no_out_across$Virgi_PetLength)))
+sum(spec == "versicolor") # one less versicolor removed
+sum(no_out_iris$Species == "versicolor") 
+sum(spec == "virginica")
+sum(no_out_iris$Species == "virginica")
+sum(no_out_iris$Species == "setosa") 
+sum(spec == "setosa") # one less setosa removed
+
+# note! This means that it's likely more prudent/robust to use the across feature method to remove outliers
+# graph
+pet <- c(no_out_across$Setosa_PetLength, no_out_across$Versi_PetLength, no_out_across$Virgi_PetLength)
+sep <- c(no_out_across$Setosa_SepLength, no_out_across$Versi_SepLength, no_out_across$Virgi_SepLength)
+spec <- as.factor(spec)
+dataEllipse(y = pet,
+            x = sep,
+            levels = c(.5,.75,.95), 
+            robust = TRUE,
+            groups = spec,
+            xlab = "Sepal Length",
+            ylab = "Petal Length",
+            main = "Outliers Removed") 
+# it actually looks reasonable to remove some versicolor! leave original choices below
 
 # get new statistics
 # save SD and Mean to watch changes after removals

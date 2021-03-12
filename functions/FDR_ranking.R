@@ -30,3 +30,6 @@ rank_feat<- function(dataFrame, class){
     rank <- (rank[order(rank, decreasing = TRUE)])
     return(rank)
 }
+
+rank_feat(iris[,-5], list(1:50, 51:100, 101:150))
+
