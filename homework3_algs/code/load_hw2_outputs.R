@@ -172,6 +172,7 @@ plotty$Cluster <- top_feat_nums$Cluster
 str(plotty)
 levels(plotty$Cluster)
 
+cl= colors()
 ### Plot the data!
 plot(plotty[clus1, 1] ~ plotty[clus1, 2], 
      col = cl[10], xlab = "PCA 64", 
@@ -188,12 +189,40 @@ legend(-3, -1.5, c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4"),
 library(car)
 scatterplot(plotty$PCA1 ~ plotty$PCA64,
             groups = plotty$Cluster,
-            #ellipse = TRUE,
+            ellipse = TRUE,
             regLine = FALSE,
             xlab = "PCA 64",
             ylab = "PCA 1",
             main = "Top Components clustered with EM")
 
+## Compare to original data
+compare_plotty <- anyDirPCA[,c(1,64)]
+compare_plotty <- scale(compare_plotty)
+plot(compare_plotty[indx0, 1] ~ compare_plotty[indx0, 2], 
+     col = cl[10], xlab = "PCA 64", 
+     ylab = "PCA 1", xlim = c(-3, 3), 
+     ylim = c(-3, 3), main = "Top components in original groups")
+points(compare_plotty[indx1, 1] ~ compare_plotty[indx1, 2], col = cl[35])
+points(compare_plotty[indx3, 1] ~ compare_plotty[indx3, 2], col = cl[66])
+points(compare_plotty[indx4, 1] ~ compare_plotty[indx4, 2], col = cl[500])
+legend(-3, -1.5, c("Index 0", "Index 1", "Index 3", "Index 4"), 
+       col = c(cl[10], cl[35], cl[66], cl[500]),
+       text.col = "green4", lty = c(1, 1, 1, 1), #pch = c(NA, 3, 4),
+       merge = TRUE, bg = "white")
+
+compare_plotty <- anyDirPCA[,c(1,2)]
+compare_plotty <- scale(compare_plotty)
+plot(compare_plotty[indx0, 1] ~ compare_plotty[indx0, 2], 
+     col = cl[10], xlab = "PCA 2", 
+     ylab = "PCA 1", xlim = c(-3, 3), 
+     ylim = c(-3, 3), main = "Top components in original groups")
+points(compare_plotty[indx1, 1] ~ compare_plotty[indx1, 2], col = cl[35])
+points(compare_plotty[indx3, 1] ~ compare_plotty[indx3, 2], col = cl[66])
+points(compare_plotty[indx4, 1] ~ compare_plotty[indx4, 2], col = cl[500])
+legend(-3, -1.5, c("Index 0", "Index 1", "Index 3", "Index 4"), 
+       col = c(cl[10], cl[35], cl[66], cl[500]),
+       text.col = "green4", lty = c(1, 1, 1, 1), #pch = c(NA, 3, 4),
+       merge = TRUE, bg = "white")
 
 # try again PCA 1 and 2 (as these are overall top features)
 top_feat_nums <- anyDirPCA[,c(1,2)]

@@ -26,10 +26,12 @@ rank_feat<- function(dataFrame, class){
     if(!is.null(colnames(dataFrame))){
         # give name to rank
         names(rank) <- colnames(dataFrame)
+    }else{
+        names(rank) <- seq(1, dim(dataFrame)[2])
     }
     rank <- (rank[order(rank, decreasing = TRUE)])
     return(rank)
 }
 
-rank_feat(iris[,-5], list(1:50, 51:100, 101:150))
+# rank_feat(iris[,-5], list(1:50, 51:100, 101:150))
 
