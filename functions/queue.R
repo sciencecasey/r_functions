@@ -29,9 +29,10 @@ Queue <- R6Class("Queue",
 
 
 
-
-
-
+q <- Queue$new(1,2,3)
+q$getHead()
+q$remove()
+q$getHead()
 
 
 # Non-portable classes --------------------------------------------

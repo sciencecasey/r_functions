@@ -4,15 +4,15 @@ pnn <- function(data, classList, smoothing = .1, train_amt = .8, nodes = NULL, n
     #'@param smoothing the smoothing parameter for the weight parameters
     #'@param train_amt a numeric amount between 0 and 1 that corresponds to the random proportion to use as training data
     #'@param nodes the number of neural nodes per class, set to the number of training observations
-    #'@param normalize should the data be normalized between 0 and 1 (set to FALSE if already normalized)
+    #'@param normalize should the data be normalized (by observaion) between 0 and 1 (set to FALSE if already normalized)
     #'the weights in this case are equivalent to the training data
-    #'
+    #'the class decision is based on the greatest associative value
     if(!is.list(classList)){
         errorCondition("classList needs to be in list form")
     }
     if(normalize){
         # normalize the data
-        data = normalize(data)        
+        data = normalize_by_obs(data)       # normally want to normalize against the training data, see the commented out code 
     }
 
     # add a column of classes
@@ -37,6 +37,7 @@ pnn <- function(data, classList, smoothing = .1, train_amt = .8, nodes = NULL, n
     }
     # save the index of class column
     cl_indx <- dim(data)[2]
+    
     # save the number training
     n_test <- dim(test)[1]
     # save the training classList
@@ -56,7 +57,7 @@ pnn <- function(data, classList, smoothing = .1, train_amt = .8, nodes = NULL, n
             classNum <- classNum + 1
             for(train_obs in class){
                 temp <- t(test[obs, -cl_indx] - train[train_obs, -cl_indx])
-                classSum <- classSum + exp(-(crossprod(temp)-1)/sigma^2)
+                classSum <- classSum + exp(-(crossprod(temp)-1)/smoothing^2)
             }
             sums[classNum] <- classSum/length(class)
         }
@@ -69,24 +70,13 @@ pnn <- function(data, classList, smoothing = .1, train_amt = .8, nodes = NULL, n
         }
     }
     accuracy = accuracy/dim(test)[1] # convert accuracy to a percentage
-    return(list(accuracy, all_acc))
-}
-
-pnn_train <- function(training, weights){
-    #'@param data: an n observations by dimension/feature (columns) data frame or matrix of training data
-    #'@param weights: a neurons/clusters X class matrix or data frame of weights
-    classes <- dim(weights)[1]
-    neurons <- dim(weights)[2]
-    for(n in 1:neurons){
-        temp <- t(training) - weights[n,]
-        D <- weights
-        diff_sum_squared <- t(crossprod(temp))
-    }
-    return(diff_sum_squared)
+    return(list(accuracy = accuracy, accurate_assignment = all_acc, tested = test, training = train, smoothing = smoothing))
 }
 
 
-pnn_og <- function(data, classList, sigma, train_amt = .8, normalize = TRUE){
+
+
+pnn_og <- function(data, classList, sigma, normalize = TRUE){
     #'@param data a numeric data frame with n observations as rows and D dimesions as columns
     #'@param classList a list of index ranges separating the classes of the input data
     #'@param sigma 
@@ -98,7 +88,7 @@ pnn_og <- function(data, classList, sigma, train_amt = .8, normalize = TRUE){
         errorCondition("classList needs to be in list form")
     }
     if(normalize){
-        data = normalize(data)    
+        data = normalize_by_obs(data)    
     }
     # add a column of classes
     class <- rep("unknown", length(data[,1]))
@@ -138,15 +128,13 @@ pnn_og <- function(data, classList, sigma, train_amt = .8, normalize = TRUE){
     return(list(accuracy, all_acc))
 }
 
-normalize <- function(data){
-    #'@param data a numeric data frame with dimenstions as cols and obs as rows
-    #'performs a max-min normalization to bring into 0-1 range
+normalize_by_obs <- function(data){
+    #'@param data a numeric data frame with dimensions as cols and obs as rows
+    #'performs a vector normalization by row (observation)
     #'@return the normalized data frame
     #'@author Casey Jayne
-    d <- dim(data)[2]
-    mins <- apply(data, 2, min)
-    maxs <- apply(data, 2, max)
-    out <- t((t(data) - mins)/(maxs - mins))
+    sums <- rowSums(data)^2 # squared sum
+    out <- data/sqrt(sums)
     return(out)
 }
 extract_training <- function(data, train_amount=.2){

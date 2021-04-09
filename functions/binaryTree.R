@@ -1,6 +1,6 @@
 #create a binary tree in which to place the evaluation values
 library("R6")
-binNode = R6Class("binNode", public = list(data = NULL, 
+binNode <- R6Class("binNode", public = list(data = NULL, 
                                            parent = NULL,
                                            left = NULL,
                                            right = NULL,
@@ -25,7 +25,7 @@ binNode = R6Class("binNode", public = list(data = NULL,
                                              return(!is.null(self$right))
                                            }))
 
-binTree = R6Class("binTree", public = list(root = NULL,
+binTree <- R6Class("binTree", public = list(root = NULL,
                                          initialize = function(value){
                                            #' create a binary tree from a single value or vector of values
                                            #' @param value a numeric value or vector of numeric types
