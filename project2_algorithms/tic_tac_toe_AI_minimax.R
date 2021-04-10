@@ -45,774 +45,751 @@ game_board = R6Class("game_board",
 
 
 
-tic_tac_toe = R6Class("ticTacToe", public = list(
-    #'@author Casey Jayne Richards
-    board = game_board$new(),
-    initialize = function(){
-        #'creates a new tic tac toe game with a public board and 
-        #'options to moveX(), moveO(), get winning(), or get winner()
-        #'relies on the R6 class game_board
-        self$board$clearBoard()
-        self$board$getBoard()
-    },
-    moveX = function(row = NULL, col = NULL){
-        #' either give a distinct location for X to move or allow it to move according to priority
-        #' @param row an integer index for row to move
-        #' @param col an integer index for col to move
-        if(is.null(row)){
-            spot = private$getPriority()
-            now = self$board$getEmpties()
-            self$board$take("X", spot[1], spot[2])
-        }
-        else{
-            self$board$take("X", row, col)
-        }
-    },
-    # alternative, conditional best
-    reflex_AI_X = function(){
-        #'checks if X can win as first option, then if X can block O from winning
-        #'if neither available, moves according to priority
-        options = self$board$getEmpties()
-        # check if the X position can win
-        # start with rows
-        locations <- self$board$getBoard()
-        for(row in seq(1,3)){
-            lineX = sum(locations[row,] == "X", na.rm = TRUE)
-            lineO = sum(locations[row,] == "O", na.rm = TRUE)
-            if(lineX == 2 && lineO == 0){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                col = now[row,]
-                col = match(TRUE, col)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard()) 
-                }
-            }
-        }
-        # check columns
-        for (col in seq(1,3)){
-            lineX = sum(locations[,col] == "X", na.rm = TRUE)
-            lineO = sum(locations[,col] == "O", na.rm = TRUE)
-            if(lineX == 2 && lineO == 0){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                row = now[,col]
-                row = match(TRUE, row)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard()) 
-                }
-            }
-        }
-        # check diags
-        diagX = c(locations[1,1] == "X", locations[2,2] == "X",
-                  locations[3,3] == "X")
-        diagO = c(locations[1,1] == "O", locations[2,2] == "O",
-                  locations[3,3] == "O")
-        lineX = sum(diagX, na.rm = TRUE)
-        lineO = sum(diagO, na.rm = TRUE)
-        if(lineX == 2 && lineO == 0){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,1]){
-                spot = c(1,1)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,3)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        #second diagonal
-        diagX = c(locations[1,3] == "X", locations[2,2] == "X",
-                  locations[3,1] == "X")
-        diagO = c(locations[1,3] == "O", locations[2,2] == "O",
-                  locations[3,1] == "O")
-        lineX = sum(diagX, na.rm = TRUE)
-        lineO = sum(diagO, na.rm = TRUE)
-        if(lineX == 2 && lineO == 0){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,3]){
-                spot = c(1,3)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,1)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        # check if block available
-        # start with rows
-        locations <- self$board$getBoard()
-        for(row in seq(1,3)){
-            lineX = sum(locations[row,] == "X", na.rm = TRUE)
-            lineO = sum(locations[row,] == "O", na.rm = TRUE)
-            if(lineX == 0 && lineO == 2){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                col = now[row,]
-                col = match(TRUE, col)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard())   
-                }
-            }
-        }
-        # check columns
-        for (col in seq(1,3)){
-            lineX = sum(locations[,col] == "X", na.rm = TRUE)
-            lineO = sum(locations[,col] == "O", na.rm = TRUE)
-            if(lineX == 0 && lineO == 2){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                row = now[,col]
-                row = match(TRUE, row)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard())   
-                }
-            }
-        }
-        # check diags
-        diagX = c(locations[1,1] == "X", locations[2,2] == "X",
-                  locations[3,3] == "X")
-        diagO = c(locations[1,1] == "O", locations[2,2] == "O",
-                  locations[3,3] == "O")
-        lineX = sum(diagX, na.rm = TRUE)
-        lineO = sum(diagO, na.rm = TRUE)
-        if(lineX == 0 && lineO == 2){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,1]){
-                spot = c(1,1)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,3)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        #second diagonal
-        diagX = c(locations[1,3] == "X", locations[2,2] == "X",
-                  locations[3,1] == "X")
-        diagO = c(locations[1,3] == "O", locations[2,2] == "O",
-                  locations[3,1] == "O")
-        lineX = sum(diagX, na.rm = TRUE)
-        lineO = sum(diagO, na.rm = TRUE)
-        if(lineX == 0 && lineO == 2){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,3]){
-                spot = c(1,3)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,1)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        # if get to here, no block or win
-        # check the corners strategy
-        for(row in c(1,3)){
-            horzO = sum(locations[row,] == "O", na.rm = TRUE)
-            horzX = sum(locations[row,] == "X", na.rm = TRUE)
-            if(horzO == 1 && horzX == 0){
-                # check adjacent columns
-                for(col in c(1,3)){
-                    vertO = sum(locations[,col] == "O", na.rm = TRUE)
-                    vertX = sum(locations[,col] == "X", na.rm = TRUE)
-                    if(vertO == 1 && horzX == 0){
-                        # move into adjacent corner!
-                        if(row == 1 && col == 1){
-                            if(options[1,1]){
-                                return(self$moveX(1,1))  
+tic_tac_toe = R6Class("ticTacToe", 
+                      public = list(
+                        #'@author Casey Jayne Richards
+                        board = game_board$new(),
+                        printboard = function(){
+                          print(self$board$getBoard()) 
+                        },
+                        initialize = function(){
+                            #'creates a new tic tac toe game with a public board and 
+                            #'options to moveX(), moveO(), get winning(), or get winner()
+                            #'relies on the R6 class game_board
+                            self$board$clearBoard()
+                            self$board$getBoard()
+                        },
+                        moveX = function(row = NULL, col = NULL){
+                            #' either give a distinct location for X to move or allow it to move according to priority
+                            #' @param row an integer index for row to move
+                            #' @param col an integer index for col to move
+                            if(is.null(row)){
+                                spot = private$getPriority()
+                                now = self$board$getEmpties()
+                                self$board$take("X", spot[1], spot[2])
                             }
-                        }else if(row == 1 && col == 3){
-                            if(options[1,3]){
-                                return(self$moveX(1,3))    
+                            else{
+                                self$board$take("X", row, col)
                             }
-                        }else if(col == 1){
-                            if(options[3,1]){
-                                return(self$moveX(3,1))   
+                            self$printboard()
+                        },
+                        # alternative, conditional best
+                        reflex_AI_X = function(){
+                            #'checks if X can win as first option, then if X can block O from winning
+                            #'if neither available, moves according to priority
+                            options = self$board$getEmpties()
+                            # check if the X position can win
+                            # start with rows
+                            locations <- self$board$getBoard()
+                            for(row in seq(1,3)){
+                                lineX = sum(locations[row,] == "X", na.rm = TRUE)
+                                lineO = sum(locations[row,] == "O", na.rm = TRUE)
+                                if(lineX == 2 && lineO == 0){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    col = now[row,]
+                                    col = match(TRUE, col)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard()) 
+                                    }
+                                }
                             }
-                        }else{
-                            if(options[3,3]){
-                                return(self$moveX(3,3)) 
+                            # check columns
+                            for (col in seq(1,3)){
+                                lineX = sum(locations[,col] == "X", na.rm = TRUE)
+                                lineO = sum(locations[,col] == "O", na.rm = TRUE)
+                                if(lineX == 2 && lineO == 0){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    row = now[,col]
+                                    row = match(TRUE, row)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard()) 
+                                    }
+                                }
                             }
+                            # check diags
+                            diagX = c(locations[1,1] == "X", locations[2,2] == "X",
+                                      locations[3,3] == "X")
+                            diagO = c(locations[1,1] == "O", locations[2,2] == "O",
+                                      locations[3,3] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            if(lineX == 2 && lineO == 0){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,1]){
+                                    spot = c(1,1)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,3)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            #second diagonal
+                            diagX = c(locations[1,3] == "X", locations[2,2] == "X",
+                                      locations[3,1] == "X")
+                            diagO = c(locations[1,3] == "O", locations[2,2] == "O",
+                                      locations[3,1] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            if(lineX == 2 && lineO == 0){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,3]){
+                                    spot = c(1,3)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,1)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            # check if block available
+                            # start with rows
+                            locations <- self$board$getBoard()
+                            for(row in seq(1,3)){
+                                lineX = sum(locations[row,] == "X", na.rm = TRUE)
+                                lineO = sum(locations[row,] == "O", na.rm = TRUE)
+                                if(lineX == 0 && lineO == 2){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    col = now[row,]
+                                    col = match(TRUE, col)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard())   
+                                    }
+                                }
+                            }
+                            # check columns
+                            for (col in seq(1,3)){
+                                lineX = sum(locations[,col] == "X", na.rm = TRUE)
+                                lineO = sum(locations[,col] == "O", na.rm = TRUE)
+                                if(lineX == 0 && lineO == 2){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    row = now[,col]
+                                    row = match(TRUE, row)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard())   
+                                    }
+                                }
+                            }
+                            # check diags
+                            diagX = c(locations[1,1] == "X", locations[2,2] == "X",
+                                      locations[3,3] == "X")
+                            diagO = c(locations[1,1] == "O", locations[2,2] == "O",
+                                      locations[3,3] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            if(lineX == 0 && lineO == 2){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,1]){
+                                    spot = c(1,1)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,3)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            #second diagonal
+                            diagX = c(locations[1,3] == "X", locations[2,2] == "X",
+                                      locations[3,1] == "X")
+                            diagO = c(locations[1,3] == "O", locations[2,2] == "O",
+                                      locations[3,1] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            if(lineX == 0 && lineO == 2){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,3]){
+                                    spot = c(1,3)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,1)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            # if get to here, no block or win
+                            # check the corners strategy
+                            for(row in c(1,3)){
+                                horzO = sum(locations[row,] == "O", na.rm = TRUE)
+                                horzX = sum(locations[row,] == "X", na.rm = TRUE)
+                                if(horzO == 1 && horzX == 0){
+                                    # check adjacent columns
+                                    for(col in c(1,3)){
+                                        vertO = sum(locations[,col] == "O", na.rm = TRUE)
+                                        vertX = sum(locations[,col] == "X", na.rm = TRUE)
+                                        if(vertO == 1 && horzX == 0){
+                                            # move into adjacent corner!
+                                            if(row == 1 && col == 1){
+                                                if(options[1,1]){
+                                                    return(self$moveX(1,1))  
+                                                }
+                                            }else if(row == 1 && col == 3){
+                                                if(options[1,3]){
+                                                    return(self$moveX(1,3))    
+                                                }
+                                            }else if(col == 1){
+                                                if(options[3,1]){
+                                                    return(self$moveX(3,1))   
+                                                }
+                                            }else{
+                                                if(options[3,3]){
+                                                    return(self$moveX(3,3)) 
+                                                }
+                                            }
+                                        }
+                                    }       
+                                }
+                            }
+                            # move on priority
+                            return(self$moveX())
+                        },
+                        # alternative, goal-based states
+                        goal_AI_X = function(){
+                            #'checks if X can win as first option, then if X can block O from winning
+                            #'if neither available, moves according to priority
+                            options = self$board$getEmpties()
+                            # check if the X position can win
+                            # start with rows
+                            locations <- self$board$getBoard()
+                            
+                            # Goal one check current win
+                            win <- function(line){
+                                # check for a win and take that space
+                                lineX = sum(line == "X", na.rm = TRUE)
+                                lineO = sum(line == "O", na.rm = TRUE)
+                                if(lineX == 2 && lineO == 0){
+                                    return(TRUE)
+                                }else{
+                                    return(FALSE)
+                                }
+                            }
+                            # Goal 2, check current block
+                            block <- function(line){
+                                lineX = sum(line == "X", na.rm = TRUE)
+                                lineO = sum(line == "O", na.rm = TRUE)
+                                if(lineX == 0 && lineO == 2){
+                                    return(TRUE)
+                                }else{
+                                    return(FALSE)
+                                }
+                            }
+                            # Goal 3, check future win
+                            future_win <- function(line){
+                                lineX = sum(line == "X", na.rm = TRUE)
+                                lineO = sum(line == "O", na.rm = TRUE)
+                                if(lineX == 1 && lineO == 0){
+                                    return(TRUE)   
+                                }else{
+                                    return(FALSE)
+                                }
+                            }
+                            # Goal 4, check future block
+                            future_block <- function(line){
+                                lineX = sum(line == "X", na.rm = TRUE)
+                                lineO = sum(line == "O", na.rm = TRUE)
+                                if(lineX == 0 && lineO == 1){
+                                    return(TRUE)   
+                                }else{
+                                    return(FALSE)
+                                }
+                            }
+                            
+                            # Check for win!
+                            for(row in seq(1,3)){
+                                line = locations[row,]
+                                state <- win(line)
+                                if(state){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    col = now[row,]
+                                    col = match(TRUE, col)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard()) 
+                                    }
+                                }
+                            }
+                            # check columns
+                            for (col in seq(1,3)){
+                                line = locations[,col]
+                                state <- win(line)
+                                if(state){
+                                    # x can win, see where the space is
+                                    now = self$board$getEmpties()
+                                    row = now[,col]
+                                    row = match(TRUE, row)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard()) 
+                                    }
+                                }
+                            }
+                            # check diags
+                            line = c(locations[1,1], locations[2,2],
+                                     locations[3,3])
+                            state <- win(line)
+                            if(state){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,1]){
+                                    spot = c(1,1)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,3)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            #second diagonal
+                            line = c(locations[1,3], locations[2,2],
+                                      locations[3,1])
+                            state <- win(line)
+                            if(state){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,3]){
+                                    spot = c(1,3)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,1)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            
+                            # check if block available
+                            # start with rows
+                            for(row in seq(1,3)){
+                                line = locations[row,]
+                                state <- block(line)
+                                if(state){
+                                    # x can block, see where the space is
+                                    now = self$board$getEmpties()
+                                    col = now[row,]
+                                    col = match(TRUE, col)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard())   
+                                    }
+                                }
+                            }
+                            # check columns
+                            for (col in seq(1,3)){
+                                line = locations[,col]
+                                state <- block(line)
+                                if(state){
+                                    # x can block, see where the space is
+                                    now = self$board$getEmpties()
+                                    row = now[,col]
+                                    row = match(TRUE, row)
+                                    if(options[row,col]){
+                                        self$moveX(row, col)
+                                        return(self$board$getBoard())   
+                                    }
+                                }
+                            }
+                            # check diags
+                            line = c(locations[1,1], locations[2,2],
+                                      locations[3,3])
+                            state <- block(line)
+                            if(state){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,1]){
+                                    spot = c(1,1)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,3)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            #second diagonal
+                            line = c(locations[1,3], locations[2,2],
+                                      locations[3,1])
+                            state <- block(line)
+                            if(state){
+                                # x can win, see where the space is
+                                now = self$board$getEmpties()
+                                if(now[1,3]){
+                                    spot = c(1,3)
+                                }else if(now[2,2]){
+                                    spot = c(2, 2)
+                                }else{
+                                    spot = c(3,1)
+                                }
+                                if(options[spot[1],spot[2]]){
+                                    self$moveX(row, col)
+                                    return(self$board$getBoard()) 
+                                }
+                            }
+                            
+                            # if get to here, no block or win
+                            # check the corners strategy for a win
+                            for(row in c(1,3)){
+                                line <- locations[row,]
+                                state <- future_win(line)
+                                if(state){
+                                    # check adjacent columns
+                                    for(col in c(1,3)){
+                                        line <- locations[,col]
+                                        state <- future_win(line)
+                                        if(state){
+                                            # move into adjacent corner!
+                                            if(row == 1 && col == 1){
+                                                if(options[1,1]){
+                                                    return(self$moveX(1,1))  
+                                                }
+                                            }else if(row == 1 && col == 3){
+                                                if(options[1,3]){
+                                                    return(self$moveX(1,3))    
+                                                }
+                                            }else if(col == 1){
+                                                if(options[3,1]){
+                                                    return(self$moveX(3,1))   
+                                                }
+                                            }else{
+                                                if(options[3,3]){
+                                                    return(self$moveX(3,3)) 
+                                                }
+                                            }
+                                        }
+                                    }       
+                                }
+                            }
+                            # check for future block!
+                            ## check if can use offensive corner strategy
+                            for(row in c(1,3)){
+                                line = locations[row,]
+                                state <- future_block(line)
+                                if(state){
+                                    # check adjacent columns
+                                    for(col in c(1,3)){
+                                        line = locations[,col]
+                                        state <- future_block(line)
+                                        if(state){
+                                            # move into adjacent corner!
+                                            if(row == 1 && col == 1){
+                                                if(options[1,1]){
+                                                    return(self$moveX(1,1))  
+                                                }
+                                            }else if(row == 1 && col == 3){
+                                                if(options[1,3]){
+                                                    return(self$moveX(1,3))    
+                                                }
+                                            }else if(col == 1){
+                                                if(options[3,1]){
+                                                    return(self$moveX(3,1))   
+                                                }
+                                            }else{
+                                                if(options[3,3]){
+                                                    return(self$moveX(3,3)) 
+                                                }
+                                            }
+                                        }
+                                    }       
+                                }
+                            }
+                            # move on priority
+                            return(self$moveX())
+                        },
+                        minimax = function(board = self$board, direction = "max"){
+                            #'@param board a game board R6 object
+                            #'@param direction the initial direction (setup to only move X player)
+                            #' a minimax to move X position only
+                            # locations <- board$clone
+                            options <- board$getEmpties()
+                            # check if the X position can win
+                            # start with rows
+                            if(sum(options) == 1){
+                                # only one spot
+                                return(self$moveX(options == T))
+                            }else if(sum(options) == 9){
+                                # fully empty board, start with utility
+                                return(self$moveX())
+                            }
+                            possibilities <- rep(0, 9)
+                            for(num in 1:length(options)){
+                                # convert to indeces
+                                col <- ifelse(num/3>2, 3, 0)
+                                if(col == 0){
+                                    col <- ifelse(num/3>1, 2, 1)
+                                }
+                                row <- num - (col-1)*3
+                                if(options[num]){
+                                    # empty spot
+                                    tgame <- board$clone()
+                                    if(direction == "max"){
+                                        tgame$take("X", row, col)
+                                    }else{ # move O
+                                        tgame$take("O", row, col)
+                                    }
+                                    possibilities[num] <- private$getScore(tgame$getBoard()) # score if we move there
+                                    # another option
+                                    # possibilities[location] <- self$utility(game) # score if we move there
+                                }else{
+                                    possibilities[num] <- NA
+                                }
+                            }
+                            if(direction == "max"){
+                                if(any(possibilities == Inf, na.rm = TRUE)){
+                                    # winning move - take move
+                                    # convert to indeces
+                                    num <- which(possibilities == Inf)[1] # only take first if tie
+                                    col <- ifelse(num/3>2, 3, 0)
+                                    if(col == 0){
+                                        col <- ifelse(num/3>1, 2, 1)
+                                    }
+                                    row <- num - (col-1)*3
+                                    return(self$moveX(row,col))    
+                                }
+                            }else{
+                                if(any(possibilities == -Inf, na.rm = TRUE)){
+                                    # O can win
+                                    num <- which(possibilities == -Inf)[1] # only take first if tie
+                                    col <- ifelse(num/3>2, 3, 0)
+                                    if(col == 0){
+                                        col <- ifelse(num/3>1, 2, 1)
+                                    }
+                                    row <- num - (col-1)*3
+                                    return(self$moveX(row,col))    
+                                }    
+                            }
+                            
+                            # no win or loss
+                            # go with max or min score
+                            if(direction == "max"){
+                                tgame <- board$clone()
+                                num <- which.max(possibilities)[1]
+                                col <- ifelse(num/3>2, 3, 0)
+                                if(col == 0){
+                                    col <- ifelse(num/3>1, 2, 1)
+                                }
+                                row <- num - (col-1)*3
+                                tgame$take("X", row, col)
+                                possibilities <- self$minimax(tgame, "min")    
+                            }else{
+                                tgame <- board$clone()
+                                num <- which.min(possibilities)[1]
+                                col <- ifelse(num/3>2, 3, 0)
+                                if(col == 0){
+                                    col <- ifelse(num/3>1, 2, 1)
+                                }
+                                row <- num - (col-1)*3
+                                tgame$take("O", row, col)
+                                possibilities <- self$minimax(tgame, "max")    
+                            }   
+                                     },
+                        moveO = function(row, col){
+                            #' @param row the row position to move as integer
+                            #' @param col the column position to move as integer
+                            self$board$take("O", row, col)
+                            self$printboard()
+                        },
+                        winning = function(){
+                            #' get the character in the lead and by how much
+                            #' @return the current score as integer
+                            score = private$getScore(self$board$getBoard())
+                            if(score == Inf || score == -Inf){
+                                private$winner(score)
+                                return #exit the function
+                            }
+                            if(score == 0){
+                                cat(paste("Tied!"))
+                            }else if(score>0){
+                                cat(paste("X is winning by ", score))
+                            }else{
+                                cat(paste("O is winning by ", -score))
+                            }
+                        },
+                        clear = function(){
+                            #' empties the current game
+                            self$board$clearBoard()
+                            self$board$getBoard() #print the board
+                        }), 
+                    private = list(
+                        getPriority = function(){
+                            #' get the next most optimal position for X to move
+                            #' @return the index where X should move
+                            options = self$board$getEmpties()
+                            if(options[2,2]){
+                                #middle is highest priority
+                                return(c(2,2)) #return middle place
+                            }else{
+                                corners = list(c(1,1), c(1,3), c(3,1), c(3,3))
+                                for(item in  corners){
+                                    if(options[item[1], item[2]]){
+                                        #take a corner space
+                                        return(c(item[1], item[2])) #breaks out of method early
+                                    }
+                                }
+                                #no corner space, take any available
+                                i = 1
+                                while(i<4){
+                                    j = 1
+                                    while(j<4){
+                                        if(options[i,j]){
+                                            return(i, j)
+                                        }
+                                        j = j+1
+                                    }
+                                    i = i+1
+                                }
+                            }
+                            #should never get here
+                            cat(paste("No available space found \n"))
+                        },
+                        getScore = function(locations){
+                            #' an internal method to calculate the current score (called by winning function)
+                            #' @param locations a tic tac toe board
+                            #' @return a positive score if X is leading, negative score if O is leading, and 0 if it's a tie
+                            scores = c(0, 0)
+                            #calculate the score across each rows
+                            row <- 1
+                            while(row<=3){
+                                lineX = sum(locations[row,] == "X", na.rm = TRUE)
+                                lineO = sum(locations[row,] == "O", na.rm = TRUE)
+                                scores = private$sumLine(lineX, lineO, scores)
+                                row = row+1
+                            }
+                            
+                            #calculate score by columns
+                            col = 1
+                            while(col<=3){
+                                lineX = sum(locations[,col] == "X", na.rm = TRUE)
+                                lineO = sum(locations[,col] == "O", na.rm = TRUE)
+                                scores = private$sumLine(lineX, lineO, scores)
+                                col = col+1
+                            }
+                            
+                            #get diagonal scores
+                            diagX = c(locations[1,1] == "X", locations[2,2] == "X",
+                                      locations[3,3] == "X")
+                            diagO = c(locations[1,1] == "O", locations[2,2] == "O",
+                                      locations[3,3] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            scores = private$sumLine(lineX, lineO, scores)
+                            #second diagonal
+                            diagX = c(locations[1,3] == "X", locations[2,2] == "X",
+                                      locations[3,1] == "X")
+                            diagO = c(locations[1,3] == "O", locations[2,2] == "O",
+                                      locations[3,1] == "O")
+                            lineX = sum(diagX, na.rm = TRUE)
+                            lineO = sum(diagO, na.rm = TRUE)
+                            scores = private$sumLine(lineX, lineO, scores)
+                            
+                            #add in priorities
+                            #add one for each corner or center
+                            priorities = c(locations[1,1], locations[1,3],
+                                           locations[2,2], locations[3,1],
+                                           locations[3,3])
+                            scores[1] <- scores[1]+sum(priorities == "X", na.rm = TRUE)
+                            scores[2] <- scores[2]+sum(priorities == "O", na.rm = TRUE)
+                            #add another for center (best spot)
+                            if(is.na(locations[2,2])){
+                                #would throw an error if checked with X and O
+                            }else{
+                                if(locations[2,2] == "X"){
+                                    scores[1] <- scores[1]+1
+                                } else if(locations[2,2] == "O"){
+                                    scores[2] <- scores[2]+1
+                                } 
+                            }
+                            return(scores[1] - scores[2])
+                        },
+                        sumLine = function(totX, totO, scores){
+                            #' internal method to add score for an individual line
+                            #' @param totX the number of Xs in a line
+                            #' @param totO the number of Ox in the same line
+                            #' @param scores- a vector at least 2 items long with x's current score in first position and y's current score in second location
+                            #' @return scores - a 2 item vector with x's updated score in first index and o's updated score in second position
+                            x <- scores[1]
+                            o <- scores[2]
+                            if(totX == 3){
+                                #x wins - 3 in a row
+                                x <- Inf
+                                return(c(x, o))
+                            }else if(totO == 3){
+                                #o wins, 3 in a row
+                                o <- Inf
+                                return(c(x, o))
+                            }else if(totX == 2 && totO == 0){
+                                #2 Xs alone in line, add 3
+                                x <- x+3
+                                #cat(paste("Two Xs alone \n"))
+                            }else if(totO == 2 && totX == 0){
+                                #2 o's alone in line, add 3
+                                o <- o+3
+                                #cat(paste("Two Os alone \n"))
+                            }else if(totX == 1 && totO == 0){
+                                #one X alone, add one
+                                x <- x+totX
+                                #cat(paste("One X alone \n"))
+                            }else if(totO ==1 && totX == 0){
+                                #one O alone, add 1
+                                o <- o+totO
+                                #cat(paste("One O alone \n"))
+                            }
+                            return(c(x,o))
+                        },
+                        winner = function(score){
+                            #' a method that states the winner at current state
+                            #' @param score the current score
+                            #' @return a string message of winner and current board
+                            if(score>0){
+                                return(cat(paste("X wins!\n")))
+                            }else{
+                                return(cat(paste("O wins!\n")))
+                            }
+                            print(self$board$getBoard())
                         }
-                    }
-                }       
-            }
-        }
-        # move on priority
-        return(self$moveX())
-    },
-    # alternative, goal-based states
-    goal_AI_X = function(){
-        #'checks if X can win as first option, then if X can block O from winning
-        #'if neither available, moves according to priority
-        options = self$board$getEmpties()
-        # check if the X position can win
-        # start with rows
-        locations <- self$board$getBoard()
-        
-        # Goal one check current win
-        win <- function(line){
-            # check for a win and take that space
-            lineX = sum(line == "X", na.rm = TRUE)
-            lineO = sum(line == "O", na.rm = TRUE)
-            if(lineX == 2 && lineO == 0){
-                return(TRUE)
-            }else{
-                return(FALSE)
-            }
-        }
-        # Goal 2, check current block
-        block <- function(line){
-            lineX = sum(line == "X", na.rm = TRUE)
-            lineO = sum(line == "O", na.rm = TRUE)
-            if(lineX == 0 && lineO == 2){
-                return(TRUE)
-            }else{
-                return(FALSE)
-            }
-        }
-        # Goal 3, check future win
-        future_win <- function(line){
-            lineX = sum(line == "X", na.rm = TRUE)
-            lineO = sum(line == "O", na.rm = TRUE)
-            if(lineX == 1 && lineO == 0){
-                return(TRUE)   
-            }else{
-                return(FALSE)
-            }
-        }
-        # Goal 4, check future block
-        future_block <- function(line){
-            lineX = sum(line == "X", na.rm = TRUE)
-            lineO = sum(line == "O", na.rm = TRUE)
-            if(lineX == 0 && lineO == 1){
-                return(TRUE)   
-            }else{
-                return(FALSE)
-            }
-        }
-        
-        # Check for win!
-        for(row in seq(1,3)){
-            line = locations[row,]
-            state <- win(line)
-            if(state){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                col = now[row,]
-                col = match(TRUE, col)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard()) 
-                }
-            }
-        }
-        # check columns
-        for (col in seq(1,3)){
-            line = locations[,col]
-            state <- win(line)
-            if(state){
-                # x can win, see where the space is
-                now = self$board$getEmpties()
-                row = now[,col]
-                row = match(TRUE, row)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard()) 
-                }
-            }
-        }
-        # check diags
-        line = c(locations[1,1], locations[2,2],
-                 locations[3,3])
-        state <- win(line)
-        if(state){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,1]){
-                spot = c(1,1)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,3)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        #second diagonal
-        line = c(locations[1,3], locations[2,2],
-                  locations[3,1])
-        state <- win(line)
-        if(state){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,3]){
-                spot = c(1,3)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,1)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        
-        # check if block available
-        # start with rows
-        for(row in seq(1,3)){
-            line = locations[row,]
-            state <- block(line)
-            if(state){
-                # x can block, see where the space is
-                now = self$board$getEmpties()
-                col = now[row,]
-                col = match(TRUE, col)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard())   
-                }
-            }
-        }
-        # check columns
-        for (col in seq(1,3)){
-            line = locations[,col]
-            state <- block(line)
-            if(state){
-                # x can block, see where the space is
-                now = self$board$getEmpties()
-                row = now[,col]
-                row = match(TRUE, row)
-                if(options[row,col]){
-                    self$moveX(row, col)
-                    return(self$board$getBoard())   
-                }
-            }
-        }
-        # check diags
-        line = c(locations[1,1], locations[2,2],
-                  locations[3,3])
-        state <- block(line)
-        if(state){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,1]){
-                spot = c(1,1)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,3)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        #second diagonal
-        line = c(locations[1,3], locations[2,2],
-                  locations[3,1])
-        state <- block(line)
-        if(state){
-            # x can win, see where the space is
-            now = self$board$getEmpties()
-            if(now[1,3]){
-                spot = c(1,3)
-            }else if(now[2,2]){
-                spot = c(2, 2)
-            }else{
-                spot = c(3,1)
-            }
-            if(options[spot[1],spot[2]]){
-                self$moveX(row, col)
-                return(self$board$getBoard()) 
-            }
-        }
-        
-        # if get to here, no block or win
-        # check the corners strategy for a win
-        for(row in c(1,3)){
-            line <- locations[row,]
-            state <- future_win(line)
-            if(state){
-                # check adjacent columns
-                for(col in c(1,3)){
-                    line <- locations[,col]
-                    state <- future_win(line)
-                    if(state){
-                        # move into adjacent corner!
-                        if(row == 1 && col == 1){
-                            if(options[1,1]){
-                                return(self$moveX(1,1))  
-                            }
-                        }else if(row == 1 && col == 3){
-                            if(options[1,3]){
-                                return(self$moveX(1,3))    
-                            }
-                        }else if(col == 1){
-                            if(options[3,1]){
-                                return(self$moveX(3,1))   
-                            }
-                        }else{
-                            if(options[3,3]){
-                                return(self$moveX(3,3)) 
-                            }
-                        }
-                    }
-                }       
-            }
-        }
-        # check for future block!
-        ## check if can use offensive corner strategy
-        for(row in c(1,3)){
-            line = locations[row,]
-            state <- future_block(line)
-            if(state){
-                # check adjacent columns
-                for(col in c(1,3)){
-                    line = locations[,col]
-                    state <- future_block(line)
-                    if(state){
-                        # move into adjacent corner!
-                        if(row == 1 && col == 1){
-                            if(options[1,1]){
-                                return(self$moveX(1,1))  
-                            }
-                        }else if(row == 1 && col == 3){
-                            if(options[1,3]){
-                                return(self$moveX(1,3))    
-                            }
-                        }else if(col == 1){
-                            if(options[3,1]){
-                                return(self$moveX(3,1))   
-                            }
-                        }else{
-                            if(options[3,3]){
-                                return(self$moveX(3,3)) 
-                            }
-                        }
-                    }
-                }       
-            }
-        }
-        # move on priority
-        return(self$moveX())
-    },
-    minimax = function(board = self$board$getBoard(), direction = "max"){
-        #' a minimax to move X position only
-        locations <- board
-        options <- locations$getEmpties()
-        # check if the X position can win
-        # start with rows
-        if(sum(options) == 1){
-            # only one spot
-            return(self$moveX(options == T))
-        }else if(sum(options) == 9){
-            # fully empty board, start with utility
-            return(self$moveX())
-        }
-        possibilities <- rep(0, 9)
-        for(num in length(1:options)){
-            if(options[num]){
-                # empty spot
-                game <- locations
-                if(direction == "max"){ # convert to indeces
-                    col <- ifelse(num/3>2, 3, 0)
-                    if(col == 0){
-                        col <- ifelse(num/3>1, 2, 1)
-                    }
-                    row <- num - (col-1)*3
-                    game$take("X", row, col)
-                }else{ # move O
-                    col <- ifelse(num/3>2, 3, 0)
-                    if(col == 0){
-                        col <- ifelse(num/3>1, 2, 1)
-                    }
-                    row <- num - (col-1)*3
-                    game$take("O", row, col)
-                }
-                possibilities[location] <- self$getScore(game) # score if we move there
-                # another option
-                # possibilities[location] <- self$utility(game) # score if we move there
-            }
-        }
-        if(direction == "max"){
-            if(any(possibilities == Inf)){
-                # winning move - take move
-                # convert to indeces
-                num <- which(possibilities == Inf)
-                col <- ifelse(num/3>2, 3, 0)
-                if(col == 0){
-                    col <- ifelse(num/3>1, 2, 1)
-                }
-                row <- num - (col-1)*3
-                return(moveX(row,col))    
-            }
-        }else{
-            if(any(possibilities == -Inf)){
-                # O can win
-                num <- which(possibilities == -Inf)
-                col <- ifelse(num/3>2, 3, 0)
-                if(col == 0){
-                    col <- ifelse(num/3>1, 2, 1)
-                }
-                row <- num - (col-1)*3
-                return(moveO(row,col))    
-            }    
-        }
-        # no win or loss
-        for(num in 1:length(options)){
-            game <- locations
-            if(direction == "max"){
-                col <- ifelse(num/3>2, 3, 0)
-                if(col == 0){
-                    col <- ifelse(num/3>1, 2, 1)
-                }
-                row <- num - (col-1)*3
-                game$take("X", row, col)
-                possibilities <- minimax(game, "min")    
-            }else{
-                col <- ifelse(num/3>2, 3, 0)
-                if(col == 0){
-                    col <- ifelse(num/3>1, 2, 1)
-                }
-                row <- num - (col-1)*3
-                game$take("O", row, col)
-                possibilities <- minimax(game, "max")    
-            }
-            
-        }
-        # does it ever go here?
-        if(direction == "max"){
-            num <- which.max(possibilities)
-            col <- ifelse(num/3>2, 3, 0)
-            if(col == 0){
-                col <- ifelse(num/3>1, 2, 1)
-            }
-            row <- num - (col-1)*3
-            return(self$moveX(row, col))
-        }else{
-            num <- which.min(possibilities)
-            col <- ifelse(num/3>2, 3, 0)
-            if(col == 0){
-                col <- ifelse(num/3>1, 2, 1)
-            }
-            row <- num - (col-1)*3
-            return(self$moveO(row, col))
-        }
-        
-        
-    },
-    utility <- function(board){
-    #'     #'a simplified score returning values only associating winners (look at X winning first)
-    #'     if(any(rowSums(board == "X", na.rm = TRUE) == 3)){
-    #'         # there is a winning move
-    #'         return(Inf)
-    #'     }else if(any(colSums(board == "X", na.rm = TRUE) == 3)){
-    #'         return(Inf)
-    #'     }else if(board[3,1]== "X" & board[2,2] == "X" & board[1,3] == "X"){
-    #'         return(Inf)
-    #'     }else if(board[1,1]== "X" & board[2,2] == "X" & board[3,3] == "X"){
-    #'         return(Inf)
-    #'     }else if(any(rowSums(board == "O", na.rm = TRUE) == 3)){
-    #'         return(-Inf)
-    #'     }else if(any(colSums(board == "O", na.rm = TRUE) == 3)){
-    #'         return(-Inf)
-    #'     }else if(board[1,1]== "X" & board[2,2] == "X" & board[3,3] == "O"){
-    #'         return(-Inf)
-    #'     }else if(board[3,1]== "O" & board[2,2] == "O" & board[1,3] == "O"){
-    #'         return(-Inf)
-    #'     }else{
-    #'         return(0)
-    #'     }
-    },
-    moveO = function(row, col){
-        #' @param row the row position to move as integer
-        #' @param col the column position to move as integer
-        self$board$take("O", row, col)
-    },
-    winning = function(){
-        #' get the character in the lead and by how much
-        #' @return the current score as integer
-        score = private$getScore(self$board$getBoard())
-        if(score == Inf || score == -Inf){
-            self$winner(score)
-            return #exit the function
-        }
-        if(score == 0){
-            cat(paste("Tied!"))
-        }else if(score>0){
-            cat(paste("X is winning by ", score))
-        }else{
-            cat(paste("O is winning by ", -score))
-        }
-    },
-    winner = function(score){
-        #' a method that states the winner at current stat
-        #' @param score the current score
-        #' @return a string message of winner and current board
-        if(score>0){
-            return(cat(paste("X wins!\n")))
-        }else{
-            return(cat(paste("O wins!\n")))
-        }
-        print(self$board$getBoard())
-    },
-    clear = function(){
-        #' empties the current game
-        self$board$clearBoard()
-        self$board$getBoard() #print the board
-    }), 
-    private = list(
-        getPriority = function(){
-            #' get the next most optimal position for X to move
-            #' @return the index where X should move
-            options = self$board$getEmpties()
-            if(options[2,2]){
-                #middle is highest priority
-                return(c(2,2)) #return middle place
-            }else{
-                corners = list(c(1,1), c(1,3), c(3,1), c(3,3))
-                for(item in  corners){
-                    if(options[item[1], item[2]]){
-                        #take a corner space
-                        return(c(item[1], item[2])) #breaks out of method early
-                    }
-                }
-                #no corner space, take any available
-                i = 1
-                while(i<4){
-                    j = 1
-                    while(j<4){
-                        if(options[i,j]){
-                            return(i, j)
-                        }
-                        j = j+1
-                    }
-                    i = i+1
-                }
-            }
-            #should never get here
-            cat(paste("No available space found \n"))
-        },
-        getScore = function(locations){
-            #' an internal method to calculate the current score (called by winning function)
-            #' @param locations a tic tac toe board
-            #' @return a positive score if X is leading, negative score if O is leading, and 0 if it's a tie
-            scores = c(0, 0)
-            #calculate the score across each rows
-            row <- 1
-            while(row<=3){
-                lineX = sum(locations[row,] == "X", na.rm = TRUE)
-                lineO = sum(locations[row,] == "O", na.rm = TRUE)
-                scores = private$sumLine(lineX, lineO, scores)
-                row = row+1
-            }
-            
-            #calculate score by columns
-            col = 1
-            while(col<=3){
-                lineX = sum(locations[,col] == "X", na.rm = TRUE)
-                lineO = sum(locations[,col] == "O", na.rm = TRUE)
-                scores = private$sumLine(lineX, lineO, scores)
-                col = col+1
-            }
-            
-            #get diagonal scores
-            diagX = c(locations[1,1] == "X", locations[2,2] == "X",
-                      locations[3,3] == "X")
-            diagO = c(locations[1,1] == "O", locations[2,2] == "O",
-                      locations[3,3] == "O")
-            lineX = sum(diagX, na.rm = TRUE)
-            lineO = sum(diagO, na.rm = TRUE)
-            scores = private$sumLine(lineX, lineO, scores)
-            #second diagonal
-            diagX = c(locations[1,3] == "X", locations[2,2] == "X",
-                      locations[3,1] == "X")
-            diagO = c(locations[1,3] == "O", locations[2,2] == "O",
-                      locations[3,1] == "O")
-            lineX = sum(diagX, na.rm = TRUE)
-            lineO = sum(diagO, na.rm = TRUE)
-            scores = private$sumLine(lineX, lineO, scores)
-            
-            #add in priorities
-            #add one for each corner or center
-            priorities = c(locations[1,1], locations[1,3],
-                           locations[2,2], locations[3,1],
-                           locations[3,3])
-            scores[1] <- scores[1]+sum(priorities == "X", na.rm = TRUE)
-            scores[2] <- scores[2]+sum(priorities == "O", na.rm = TRUE)
-            #add another for center (best spot)
-            if(is.na(locations[2,2])){
-                #would throw an error if checked with X and O
-            }else{
-                if(locations[2,2] == "X"){
-                    scores[1] <- scores[1]+1
-                } else if(locations[2,2] == "O"){
-                    scores[2] <- scores[2]+1
-                } 
-            }
-            return(scores[1] - scores[2])
-        },
-        sumLine = function(totX, totO, scores){
-            #' internal method to add score for an individual line
-            #' @param totX the number of Xs in a line
-            #' @param totO the number of Ox in the same line
-            #' @param scores- a vector at least 2 items long with x's current score in first position and y's current score in second location
-            #' @return scores - a 2 item vector with x's updated score in first index and o's updated score in second position
-            x <- scores[1]
-            o <- scores[2]
-            if(totX == 3){
-                #x wins - 3 in a row
-                x <- Inf
-                return(c(x, o))
-            }else if(totO == 3){
-                #o wins, 3 in a row
-                o <- Inf
-                return(c(x, o))
-            }else if(totX == 2 && totO == 0){
-                #2 Xs alone in line, add 3
-                x <- x+3
-                #cat(paste("Two Xs alone \n"))
-            }else if(totO == 2 && totX == 0){
-                #2 o's alone in line, add 3
-                o <- o+3
-                #cat(paste("Two Os alone \n"))
-            }else if(totX == 1 && totO == 0){
-                #one X alone, add one
-                x <- x+totX
-                #cat(paste("One X alone \n"))
-            }else if(totO ==1 && totX == 0){
-                #one O alone, add 1
-                o <- o+totO
-                #cat(paste("One O alone \n"))
-            }
-            return(c(x,o))
-        }
-    )
+                    )
 )
+
+# tic_tac_toe$debug("minimax")
+game <- tic_tac_toe$new()
+game$moveO(1,1)
+game$minimax()
+game$moveO(1,3)
+game$minimax()
+game$moveO(3,1)
+game$minimax()
+game$moveO(3,3)
+game$minimax()
+game$winning()
 
 #add a function to generate a unique value for each game state
 unique_score = function(score, board){
@@ -848,6 +825,7 @@ unique_score = function(score, board){
 game <- tic_tac_toe$new()
 game$clear()
 game$moveO(1,1)
+game$minimax()
 game$moveX()
 game$moveX(1,3)
 game$goal_AI_X()
