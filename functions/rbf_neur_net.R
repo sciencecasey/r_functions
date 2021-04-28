@@ -140,13 +140,12 @@ rbf_train <- function(training, class_vector, smoothing, bias = FALSE, bias_weig
       Htmp <- rbind(H, bias_weights)
       require(pracma)
       wtmp = mrdivide(class_vector, Htmp)
-      # wtmp = mldivide(class_vector, t(Htmp))
       w_hat <- wtmp[1:observations] # grab without the bias weights
       bias_weights <- wtmp[observations+1] # grab last for bias
     }
     
     # get prediction
-    y_hat <- t(H %*% (w_hat)) + bias
+    y_hat <- H %*% w_hat + bias_weights
     y_hat[y_hat<0] <- -1
     y_hat[y_hat>0] <- 1
     # check accuracy
@@ -187,8 +186,8 @@ rbf_classify <- function(test_data, trained_model){
   if(!trained_model$bias){
     y_hat = t(H) %*% trained_model$w_hat
   }else{
-    b <-  as.numeric(trained_model$bias_weigths)
-    y_hat = (t(H) %*% trained_model$w_hat) + b
+    # b <-  as.numeric(trained_model$bias_weigths)
+    y_hat = (t(H) %*% trained_model$w_hat) + trained_model$bias_weights
   }
   
   raw_yhat <- y_hat # save the unrounded values
