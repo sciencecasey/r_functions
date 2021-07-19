@@ -6,9 +6,11 @@ cross_validate <- function(classList, number_folds){
     #'@author Casey Jayne
     cross_val_lists <- list()
     list_name = c()
+    remain_ing <- c()
     for(class_num in 1:length(classList)){
         class = classList[[class_num]]
-        amount = 1/number_folds*(length(class))
+        amount = floor(length(class)/number_folds)
+        remain = mod(length(class), number_folds)
         class_indxs <- matrix(data = rep(0, amount*number_folds), nrow = amount)
         cols = c()
         for(iteration in 1:number_folds){
@@ -17,12 +19,13 @@ cross_validate <- function(classList, number_folds){
             class = class[-indx] # remove the index until the last time
             cols = c(cols, paste0("validation ", iteration)) # create column name
         }
+        remain_ing <- c(remain_ing, remain)
         colnames(class_indxs) = cols # add col names
         cross_val_lists[[class_num]] = class_indxs
         list_name = c(list_name, paste0("Class_", class_num)) # create matrix name
     }
     names(cross_val_lists) = list_name # add matrix names
-    return(cross_val_lists)
+    return(list(cross_val = cross_val_lists, number_remaining_perclass = remain_ing))
 }
 
 

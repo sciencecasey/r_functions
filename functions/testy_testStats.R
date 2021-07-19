@@ -14,16 +14,14 @@ testy = function(x, p = NULL){
   kurty = kurtosis(x, na.rm = TRUE)
   if(!is.null(p)){
     if(p<1 && p>0){
-      trimmed_mean = 1/(n-2*p) * sum(x[(p+1):(n-p)])  
-    }else{
-      trimmed_mean = NA
+      trimmed_mean = 1/(n-2*p) * sum(x[(p+1):(n-p)])
     }
-    return(c(min = min, max = max, sd = sd, mean = mean, 
-             trimmed_mean = trimmed_mean, 
-             skew = skew, kurtosis = kurty)) 
+  }else{
+      trimmed_mean = NA
   }
-  return(c(min = min, max = max, sd = sd, mean = mean, 
-           skew = skew, kurtosis = kurty))
+  return(c(min = min, max = max, sd = sd, mean = mean,
+             trimmed_mean = trimmed_mean,
+             skew = skew, kurtosis = kurty))
 }
 
 

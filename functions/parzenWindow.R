@@ -4,6 +4,7 @@ parz_window <- function(test_data, classList, spread, train_amt = .2){
     #'@param classList a list of index ranges separating the classes of the input data
     #'@param spread the size/spread of each kernel
     #'@return a dataframe with columns the test inputs and rows the summed gaus kernels across each training class
+    #'@author Casey Jayne
     # separate by classes
     if(!is.list(classList)){
         errorCondition("classList needs to be in list form")
@@ -45,25 +46,32 @@ parz_window <- function(test_data, classList, spread, train_amt = .2){
 }
 
 # 5 - fold cross validate to see if working correctly!
-testing <- function(p, numClasses){
-    classInd <- length(p[1,])/numClasses
-    classed <- apply(p, 2, max)
-    for(class in seq(1, numClasses)){
-        for(i in seq(1, classInd)){
-            if(names(classed[i]) != class){
-                print("the {i} th item in class {class} is incorrectly valued.")
-            }
-        }    
-    }
+parzen_accuracy <- function(p, numClasses){
+    #'@param p a data frame of probabilities outputted from the parzen window funtion
+    #'@param numClasses the number of classes in the data frame (should be the number of rows)
+    #'note that this only works with the same number of items in each class
+    #'@author Casey Jayne
+    classed <- apply(p, 2, which.max)
+    correct <- sum(classed == names(classed))
+    acc <- correct/length(classed)
+    return(acc)
+    # for(class in seq(1, numClasses)){
+    #     for(i in seq(1, classInd)){
+    #         if(names(classed[i]) != class){
+    #             print("the {i} th item in class {class} is incorrectly valued.")
+    #         }
+    #     }    
+    # }
 }
 
+
 # exactly modeled off matlab
-# THIS TEST AND TRAINING IS BACKWARDS
 parz_window_og <- function(test_data, train_data, spread){
     #'@param test_data a numeric data frame or matrix with n observations as rows and D dimesions as columns
     #'@param train_data a numeric data frame or range to test the data against
     #'@param spread the size/spread of each kernel
     #'@return a matrix of parzen windows for each test data point
+    #'@author Casey Jayne
     # kernels1 <- gaus_kernel(train_data, test_data, spread)
     p = matrix(0, ncol = dim(train_data)[1])
     for(obs in seq(1, dim(test_data)[1])){
@@ -77,7 +85,8 @@ parz_window_og <- function(test_data, train_data, spread){
 extract_training <- function(data, train_amount=.2){
     #'@param data a numeric data frame or matrix with n observations as rows and D dimensions as columns
     #'@param train_amount a numeric amount between 0 and 1 that corresponds to the random proportion to use as training data
-    #'@return a list containing the original data separated into training_dat and test_dat
+    #'@return a list containing the original data separated into training_dat and test_dat'
+    #'@author Casey Jayne
     if(train_amount > 1 | train_amount < 0){
         errorCondition("Training amount not between 0 and 1")
     }
@@ -99,6 +108,7 @@ gaus_kernel <- function(train, test, spread){
     #'@param train a matrix of training data with m obersvations as rows and D dimensions as columns
     #'@param spread the size/spread of each kernel
     #'@return a matrix of kernel of the size n (observation/rows train input) as rows X m (observations/rows test input) as columns
+    #'@author Casey Jayne
     n = dim(train)[1] # train observations/rows # the number of training data is what should be 
     D = dim(test)[2] # dimensions/features/columns
     K = matrix(0, nrow = dim(test)[1], ncol = n) # a test dim X training dim matrix

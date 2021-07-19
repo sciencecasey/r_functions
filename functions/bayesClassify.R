@@ -14,8 +14,8 @@ bayes_classifier.separated <- function(test, training, trainClassList, testClass
     classNum = 1
     for(class in trainClassList){
         #calculate the class priors
-        meany = colMeans(training[class,])
-        covy = cov(training[class,])
+        meany = colMeans(training[class,]) #, na.rm = TRUE)
+        covy = cov(training[class,]) #, use = "complete.obs")
         prior = length(class)/dim(training)[1]
         each_class = c() # will end up length of test items
         for(obs in 1:test_obs){
