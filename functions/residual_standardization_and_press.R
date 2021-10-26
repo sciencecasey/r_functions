@@ -1,42 +1,25 @@
-resid_variance <- function(X, e=NULL, yhat=NULL, y=NULL){
+resid_variance <- function(X, variance){
   #'takes either a vector of errors or a vector of predicted and observed values and returns the variance of associated errors
   #'@param X a matrix of input regressors (with 1s if intercept in model) from which to compute the hat matrix
-  #'@param e a vector of residuals
-  #'@param yhat a vector of predicted y values
-  #'@param y a vector of observed y values
-  #'@return a vector of associated variances
-  if(is.null(e)){
-    if(is.null(yhat) | is.null(y)){
-      errorCondition("Must include either y and yhat or error vector")
-    }else{
-      e <- y-yhat
-    }
-  }
+  #'@param variance the variance associated with the model
+  
   hat <- X%*%solve(t(X)%*%X)%*%t(X)
-  return((1/length(e)*sum(e^2)*(1-diag(hat))))
+  return(variance*(1-diag(hat)))
 }
 
-resid_cov <- function(X, e=NULL, yhat=NULL, y=NULL){
+resid_cov <- function(X, variance){
   #'takes either a vector of errors or a vector of predicted and observed values and returns the covariance of associated errors
   #'@param X a matrix of input regressors (with 1s if intercept in model) from which to compute the hat matrix
-  #'@param e a vector of residuals
-  #'@param yhat a vector of predicted y values
-  #'@param y a vector of observed y values
+  #'@param variance - the variance of a model
   #'@return a matrix of covariances 
-  if(is.null(e)){
-    if(is.null(yhat) | is.null(y)){
-      errorCondition("Must include either y and yhat or error vector")
-    }else{
-      e <- y-yhat
-    }
-  }
+ 
   hat <- X%*%solve(t(X)%*%X)%*%t(X)
-  cov <- -1/length(e)*sum(e^2)*hat
+  cov <- -variance*hat
   diag(cov) <- 1
   return(cov)
 }
 
-resid_standard <- function(e=NULL, yhat=NULL, y=NULL){
+resid_standard <- function(variance, e=NULL, yhat=NULL, y=NULL){
   #'@param e a vector of residuals
   #'@param yhat a vector of predicted y values
   #'@param y a vector of observed y values
@@ -48,13 +31,13 @@ resid_standard <- function(e=NULL, yhat=NULL, y=NULL){
       e <- y-yhat
     }
   }
-  msres <- 1/length(e)*sum(e^2)
-  return(e/sqrt(msres))
+  return(e/sqrt(variance))
 } 
 
-resid_student <- function(X, e=NULL, yhat=NULL, y=NULL){
+resid_student <- function(X, variance, e=NULL, yhat=NULL, y=NULL){
   #' should yield the same result as rstandard()
   #'@param X a matrix of regressors (including 1's as constant for intercept if included)
+  #'@param variance a single value of the model variance
   #'@param e a vector of residuals
   #'@param yhat a vector of predicted y values
   #'@param y a vector of observed y values
@@ -68,20 +51,15 @@ resid_student <- function(X, e=NULL, yhat=NULL, y=NULL){
     }
   }
   hat <- X%*%solve(t(X)%*%X)%*%t(X)
-  msres <- 1/length(e)*sum(e^2)
-  return(e/sqrt(msres*(1-diag(hat))))
+  return(e/sqrt(variance*(1-diag(hat))))
 } 
 
-prediction_error_resid <- function(X,e=NULL, yhat=NULL, y=NULL, standardize = F){
+prediction_error_resid <- function(X,e=NULL, yhat=NULL, y=NULL){
   #'@param X a matrix of regressors (including 1's as constant for intercept if included)
   #'@param e a vector of residuals
   #'@param yhat a vector of predicted y values
-  #'@param standardize default F: do you want to standardize the errors as well? 
   #'@param y a vector of observed y values
   #'@return a vector of prediction errors, note that if standardize is set to true this returns the same value as the studentized function
-  if(standardize){
-    resid_student(X, e, yhat, y)
-  }
   if(is.null(e)){
     if(is.null(yhat) | is.null(y)){
       errorCondition("Must include either y and yhat or error vector")
@@ -92,7 +70,6 @@ prediction_error_resid <- function(X,e=NULL, yhat=NULL, y=NULL, standardize = F)
   hat <- X%*%solve(t(X)%*%X)%*%t(X)
   return(e/(1-diag(hat)))
 }
-
 press_stat <- function(press_resids = null){
   #'@param press_resids a vector of already press residuals (function names prediction error residuals)
   #'@return a statistic for the PRESS sum of squares
@@ -112,8 +89,7 @@ r2_prediction_stat <- function(PRESS, y, corrected = T){
   }
   return(1 - (PRESS/SS_T))
 }
-
-resid_rstudent <- function(X,e=NULL, yhat=NULL, y=NULL){
+resid_Rstudent <- function(X, variance, e=NULL, yhat=NULL, y=NULL){
   #' an externally studentized residual using estimated variance as though each ith error term isn't included in the model
   #' should yield same result as rstudent() of MASS::studres()
   #'@param X a matrix of regressors (including 1's as constant for intercept if included)
@@ -128,8 +104,7 @@ resid_rstudent <- function(X,e=NULL, yhat=NULL, y=NULL){
     }
   }
   hat <- X%*%solve(t(X)%*%X)%*%t(X)
-  msres <- 1/length(e)*sum(e^2)
-  s2 <- ((nrow(X)-ncol(X))*msres-e^2)/(1-diag(hat))
+  s2 <- (nrow(X)-ncol(X))*variance-e^2/(1-diag(hat))
   s2 <- s2/(nrow(X)-ncol(X)-1)
   return(e/sqrt(s2*(1-diag(hat))))
 }
