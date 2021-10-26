@@ -108,3 +108,36 @@ resid_Rstudent <- function(X, variance, e=NULL, yhat=NULL, y=NULL){
   s2 <- s2/(nrow(X)-ncol(X)-1)
   return(e/sqrt(s2*(1-diag(hat))))
 }
+
+hat_mat <- function(X){
+  #'@param X the X matrix used in the model
+  
+  return(X%*%solve(t(X)%*%X)%*%t(X))
+}
+cooksD <- function(X, variance, e=NULL, y=NULL, yhat=NULL, studentized_resid=NULL){
+  #'@param X a matrix of regressors (including 1's as constant for intercept if included)
+  #'@param variance a single value of the model variance
+  #'@param e a vector of residuals
+  #'@param yhat a vector of predicted y values
+  #'@param y a vector of observed y values
+  #'@param studentized_resid a vector of studentized residuals (NOT leave one out Rstudents)
+  
+  var_yfit <- diag(hat_mat(X))
+  var_e <- 1-var_yfit
+  
+  if(!is.null(studentized_resid)){
+    if(is.null(e)){
+      if(is.null(yhat) | is.null(y)){
+        errorCondition("Must include either studentized residual, y and yhat or error vector")
+      }else{
+        e <- y-yhat
+      }
+    }
+  }else{
+    studentized_resid <- resid_student(X, variance, e, y, yhat)  
+  }
+  
+  (studentized_resid^2*var_yfit)/(ncol(X)*var_e)
+}
+
+

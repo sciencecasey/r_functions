@@ -4,7 +4,7 @@ lack_of_fit_anova_exhaustive <- function(X, y, intercept = T){
   #'@intercept adjusts the calculation of sum of squares based on estimating intercept or not
   #'@return a nested list containing list of full model(with extended anova, intercepts, var-covar matrix, errors, standard errors, and estimated variance) and list of compiled data frame for each regressor unique values with repeat observations
   
-  source("opt/anaconda3/envs/m1_r/r_master_repo-main/functions/anova_statastyle.R")
+  source("~/opt/anaconda3/envs/m1_r/r_master_repo-main/functions/anova_statastyle.R")
   
   SS_PE <- 0
   DOF_SSPe <- 0
@@ -15,7 +15,13 @@ lack_of_fit_anova_exhaustive <- function(X, y, intercept = T){
   }else{
     start = 1
   }
+  
+  # make initial anova table based on desired results
+  mod_o <- anova_stata(X, y, intercept)
+  
   for(regressor in start:ncol(X)){
+      # save a copy of the current model
+      mod <- mod_o
       x_j <- X[,regressor] # the regressor we're on
       itr <- unique(x_j)
       dat_compiled_full <- data.frame(x = itr,
@@ -33,23 +39,23 @@ lack_of_fit_anova_exhaustive <- function(X, y, intercept = T){
       dat_compiled <- dat_compiled_full[dat_compiled_full$DOF != 0,]
       SS_PE <- SS_PE + sum(dat_compiled$SS)
       DOF_SSPe <- DOF_SSPe + sum(dat_compiled$DOF)
-      compiled_data_list[[regressor-start+1]] <- dat_compiled
+      if(length(itr)-length(mod$coeffs))
+      LOF = c(mod$anova$SS[2]-SS_PE, 
+                        length(itr)-length(mod$coeffs), 
+                        (mod$anova$SS[2]-SS_PE)/(mod$anova$DOF[2]-DOF_SSPe),
+                        NA, NA),
+      mod$anova <- rbind(mod$anova[1,], 
+                         mod$anova[2,],
+                         "lack of fit"=LOF,
+                         "pure error"=c(SS_PE, DOF_SSPe, SS_PE/DOF_SSPe, NA, NA),
+                         mod$anova[3,])
+      mod$anova$F0[3] <- mod$anova$MS[3]/mod$anova$MS[4]
+      mod$anova$p[3] <- pf(mod$anova$F0[3], mod$anova$DOF[3], mod$anova$DOF[4], lower.tail = F)
+      
+      compiled_data_list[[regressor-start+1]] <- list(dat_compiled, mod$anova)
   }
   
-  # make anova table based on desired results
-  mod <- anova_stata(X, y, corrected, intercept)
-  mod$anova <- rbind(mod$anova[1,], 
-                     mod$anova[2,],
-                     "lack of fit" = c(mod$anova$SS[2]-SS_PE, 
-                                       mod$anova$DOF[2]-DOF_SSPe, 
-                                       (mod$anova$SS[2]-SS_PE)/(mod$anova$DOF[2]-DOF_SSPe),
-                                       NA, NA),
-                     "pure error"=c(SS_PE, DOF_SSPe, SS_PE/DOF_SSPe, NA, NA),
-                     mod$anova[3,])
-  mod$anova$F0[3] <- mod$anova$MS[3]/mod$anova$MS[4]
-  mod$anova$p[3] <- pf(mod$anova$F0[3], mod$anova$DOF[3], mod$anova$DOF[4], lower.tail = F)
-
-  return(list(full_model = mod, compiled_data_frames = compiled_data_list))
+  return(list(each_regressor_list = compiled_data_list, original_model=mod_o))
   
 }
 
@@ -110,9 +116,9 @@ ss_pureError <- function(X, y, intercept = T, include_regressor_tables = F, mode
 
 
 
-mod <- lack_of_fit_anova.exhaustive(matrix(c(rep(1, nrow(dat)), dat$x), nrow = nrow(dat)), dat$y)
-mod$compiled_data_frames
-ss_pureError(matrix(c(rep(1, nrow(dat)), dat$x), nrow = nrow(dat)), dat$y)
-mod$full_model$anova
+#mod <- lack_of_fit_anova)_exhaustive(matrix(c(rep(1, nrow(dat)), dat$x), nrow = nrow(dat)), dat$y)
+#mod$compiled_data_frames
+#ss_pureError(matrix(c(rep(1, nrow(dat)), dat$x), nrow = nrow(dat)), dat$y)
+#mod$full_model$anova
 
 
