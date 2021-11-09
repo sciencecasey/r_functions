@@ -47,4 +47,20 @@ anova_stata <- function(X, y, corrected=TRUE, intercept = TRUE){
 
 }
 
+pred <- function(mod, values, intercept = TRUE){
+    #'@param mod an anova stata style model
+    #'@param intercept T if the mod includes intercept term
+    #'@param values a data frame of values with each column representing a regressor value of new data
+    #'@return the fitted y values based on applying the model from mod
+
+
+    if(intercept){
+        vals <- apply(values, 1, function(x) sum(mod$coeffs[-1]*x))
+        return(vals+mod$coeffs[1])
+    }else{
+        vals <- apply(values, 1, function(x) sum(mod$coeffs*x))
+        return(vals)
+    }
+}
+
 
