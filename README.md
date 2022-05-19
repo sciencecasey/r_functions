@@ -1,3 +1,3 @@
-# Deleting Files from This Repo
+# Functions
 
-* This repo has been mostly deleted and archived to allow for new organization of my github content
+* Various R functions with comments for how to use
