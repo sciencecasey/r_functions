@@ -6,26 +6,76 @@ newtons_method <- function(gx, respect_to, inputs, sum=FALSE, check_individual =
   #'@param check_individual: should each parameter be checked separately? Defaults false for frobenius norm (euclidian distance) check
   #'@return: a list with x_hat estimated value of x* based on newton's method and the number of iterations taken to converge
   #'@author: Casey Jayne
-  final_out <- matrix(-999, nrow=length(respect_to))
-  rownames(final_out) <- respect_to
-  final_it <- matrix(0, nrow=length(respect_to))
-  rownames(final_it) <- respect_to
+  
+  if(check_individual){
+      return(newtons_method.indv)
+  }
   dxdg <- deriv3(gx, respect_to, function.arg=names(inputs))
   if(sum){
-    h <- do.call(dxdg,inputs) # h <- eval(dxdg, as.list(inputs))
-    #h_t <- matrix(-colSums(attr(h, 'gradient'))/rowSums(colSums(attr(h, 'hessian'))))
+    h <- do.call(dxdg,inputs) 
     h_t <- matrix(-colSums(attr(h, 'gradient')) %*% pracma::pinv(colSums(attr(h, 'hessian'))))
     rownames(h_t) <- respect_to
   }else{
-    h <- do.call(dxdg,inputs) # h <- eval(dxdg, as.list(inputs))
+    h <- do.call(dxdg,inputs) 
     h_t <- matrix(-attr(h, 'gradient') %*% pracma::pinv(colSums(attr(h, 'hessian'))))
-    #h_t <- matrix(-attr(h, 'gradient')/rowSums(attr(h, 'hessian')))
     rownames(h_t) <- respect_to
   }
   iter <- 1
   while(TRUE){
     x_next <- as.numeric(inputs[respect_to]) + h_t
-    if(check_individual){
+    # traditional convergence check
+    if(sum((as.numeric(x_next)-as.numeric(inputs[respect_to]))^2)<.0001){
+        return(list(theta_hat = inputs[respect_to], convergence_steps = iter))
+    # if(norm(as.matrix(as.numeric(x_next)-as.numeric(inputs[respect_to])), 'F')<.0001){
+    #     return(list(theta_hat = inputs[respect_to], convergence_steps = iter))
+    }else if(iter > 10000){
+        return('Failed to converge')
+    }
+    inputs[respect_to] <- unname(x_next)
+    if(sum){
+        h <- do.call(dxdg,inputs)
+        h_t <- matrix(-colSums(attr(h, 'gradient')) %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+        rownames(h_t) <- names(colSums(attr(h, 'gradient')))
+        h_t <- h_t[respect_to,] # only grab items of interest at this iteration
+    }else{
+         h <- do.call(dxdg,inputs)
+         h_t <- matrix(-attr(h, 'gradient') %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+         rownames(h_t) <- names(colSums(attr(h, 'gradient')))
+         h_t <- h_t[respect_to,] # only grab items of interest at this iteration
+    }
+    iter <- iter + 1
+  }
+
+}
+
+newtons_method.individual <- function(gx, respect_to, inputs, sum=FALSE, check_individual = TRUE){
+    #'@param gx: an expression object with only one variable, x
+    #'@param respect_to: variable name for the gradient to be taken with respect to if single variate.  If multivariate, a character vector with each variable of interest inside
+    #'@param inputs: a named vector of inputs and their starting or range of values
+    #'@param sum: should the gradient be summed at x_t? (yes for more than one value as in MLE)
+    #'@param check_individual: should each parameter be checked separately? Defaults false for frobenius norm (euclidian distance) check
+    #'@return: a list with x_hat estimated value of x* based on newton's method and the number of iterations taken to converge
+    #'@author: Casey Jayne
+    final_out <- matrix(-999, nrow=length(respect_to))
+    rownames(final_out) <- respect_to
+    final_it <- matrix(0, nrow=length(respect_to))
+    rownames(final_it) <- respect_to
+    dxdg <- deriv3(gx, respect_to, function.arg=names(inputs))
+    if(sum){
+        h <- do.call(dxdg,inputs) # h <- eval(dxdg, as.list(inputs))
+        #h_t <- matrix(-colSums(attr(h, 'gradient'))/rowSums(colSums(attr(h, 'hessian'))))
+        h_t <- matrix(-colSums(attr(h, 'gradient')) %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+        rownames(h_t) <- respect_to
+    }else{
+        h <- do.call(dxdg,inputs) # h <- eval(dxdg, as.list(inputs))
+        h_t <- matrix(-attr(h, 'gradient') %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+        #h_t <- matrix(-attr(h, 'gradient')/rowSums(attr(h, 'hessian')))
+        rownames(h_t) <- respect_to
+    }
+    iter <- 1
+    while(TRUE){
+        x_next <- as.numeric(inputs[respect_to]) + h_t
+        
         if(all(is.nan(x_next))){
             warningCondition(paste0('Fail to converge on ', respect_to))
             final_it[which(final_it==0)] <- iter
@@ -50,36 +100,28 @@ newtons_method <- function(gx, respect_to, inputs, sum=FALSE, check_individual =
                 }
             }
         }
-    }else{
-        # traditional convergence check
-        if(norm(as.matrix(as.numeric(x_next)-as.numeric(inputs[respect_to])), 'F')<.0001){
-            return(list(theta_hat = inputs[respect_to], convergence_steps = iter))
-        }else if(iter > 10000){
-            return('Failed to converge')
+        inputs[respect_to] <- unname(x_next)
+        if(sum){
+            h <- do.call(dxdg,inputs)
+            #h <- dxdg(inputs) # h <- eval(dxdg, as.list(inputs))
+            h_t <- matrix(-colSums(attr(h, 'gradient')) %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+            #h_t <- matrix(-colSums(attr(h, 'gradient'))/rowSums(colSums(attr(h, 'hessian'))))
+            rownames(h_t) <- names(colSums(attr(h, 'gradient')))
+            h_t <- h_t[respect_to,] # only grab items of interest at this iteration
+        }else{
+            h <- do.call(dxdg,inputs)
+            h_t <- matrix(-attr(h, 'gradient') %*% pracma::pinv(colSums(attr(h, 'hessian'))))
+            #h_t <- matrix(-attr(h, 'gradient')/rowSums(attr(h, 'hessian')))
+            rownames(h_t) <- names(colSums(attr(h, 'gradient')))
+            h_t <- h_t[respect_to,] # only grab items of interest at this iteration
+            #rownames(h_t) <- respect_to
         }
+        iter <- iter + 1
     }
     
-    
-    inputs[respect_to] <- unname(x_next)
-    if(sum){
-        h <- do.call(dxdg,inputs)
-        #h <- dxdg(inputs) # h <- eval(dxdg, as.list(inputs))
-        h_t <- matrix(-colSums(attr(h, 'gradient')) %*% pracma::pinv(colSums(attr(h, 'hessian'))))
-        #h_t <- matrix(-colSums(attr(h, 'gradient'))/rowSums(colSums(attr(h, 'hessian'))))
-        rownames(h_t) <- names(colSums(attr(h, 'gradient')))
-        h_t <- h_t[respect_to,] # only grab items of interest at this iteration
-    }else{
-         h <- do.call(dxdg,inputs)
-         h_t <- matrix(-attr(h, 'gradient') %*% pracma::pinv(colSums(attr(h, 'hessian'))))
-         #h_t <- matrix(-attr(h, 'gradient')/rowSums(attr(h, 'hessian')))
-         rownames(h_t) <- names(colSums(attr(h, 'gradient')))
-         h_t <- h_t[respect_to,] # only grab items of interest at this iteration
-         #rownames(h_t) <- respect_to
-    }
-    iter <- iter + 1
-  }
-
 }
+
+
 eq <- expression(log(x)/(1+x))
 #newtons_method(eq, .5)
 
@@ -91,4 +133,6 @@ newtons_method(ll, inputs = list(mu=mean(dat), sigma=1, x=dat), sum = TRUE, resp
 
 
 newtons_method(ll, inputs = list(mu=mean(dat), sigma=25, x=dat), sum = TRUE, respect_to = c('mu', 'sigma'))
+
+
 
