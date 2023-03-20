@@ -36,7 +36,7 @@ fisher_process<- function(start_a1, start_a2){
     # initialize unchanging params
     b1=oil_dat$importexport
     b2=oil_dat$domestic
-    n=oil_dat$year
+    n=oil_dat$spills
     # make the objects to compute each time
     alpha <- matrix(c(start_a1, start_a2), nrow=2)
     G <- deriv3(ll, c('alpha1', 'alpha2'), c('alpha1', 'alpha2', 'b1', 'b2', 'n'), hessian=FALSE)
@@ -45,9 +45,10 @@ fisher_process<- function(start_a1, start_a2){
         # compute the fisher information
         HE <- matrix(c(eh_11(b1, b2, a1=alpha[1], a2=alpha[2]), 
                        rep(eh_12(b1, b2, a1=alpha[1], a2=alpha[2]), 2),
-                       eh_22(b1, b2, a1=alpha[1], a2=alpha[2])), nrow=2)
+                       eh_22(b1, b2, a1=alpha[1], a2=alpha[2])), nrow=2, byrow=TRUE)
         # alpha next is alpha+I(alpha)^-1%*%gradient(alpha)
-        alpha_next <- alpha + pinv(HE) %*% (as.matrix(colSums(attr(G(alpha[1], alpha[2], b1, b2, n), 'gradient'))))
+        grad <- matrix(colSums(attr(G(alpha[1], alpha[2], b1, b2, n), 'gradient')))
+        alpha_next <- alpha + pinv(HE) %*% grad
         if(norm(alpha_next-alpha, 'F')<.0001){
             return(list(theta_hat = alpha_next, convergence_steps=iter))
         }
@@ -57,4 +58,6 @@ fisher_process<- function(start_a1, start_a2){
         
     }
 }
+fisher_process(.1,.1)
+fisher_process(1,1)
 fisher_process(.1,.1)

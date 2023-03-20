@@ -19,6 +19,9 @@ rejection_sampling <- function(n, f_target, g_sampling, g_density, alpha=1, from
     return(list(keep=data.frame(x_keep = y[indx], envelopeX = ey[indx]/alpha, f_targetX=fy[indx], u=u[indx]), reject=data.frame(x_reject = y[not_indx], envelopeX = ey[not_indx]/alpha, f_targetX=fy[not_indx], u=u[not_indx])))
 }
 
+x <- rejection_sampling(1000, dnorm, rexp, dexp, alpha=.3, rate=2, from = -5, to = 5)
+plot(x$keep$envelopeX~x$keep$x_keep, ylim=c(0, 5), xlim=c(-3, 3))
+points(x$keep$f_targetX~x$keep$x_keep, col='red')
 
 y <- rnorm(1000, 0, 4) # y drawn from g
 f <- function(x) dnorm(x, 1, 3) # target function (black)
@@ -60,6 +63,7 @@ rejection_sampling_envelope<- function(n, f, alpha, g_sample, g_density, from, t
     return(data.frame(var, density))
 }
 
+x <- rejection_sampling(1000, dnorm, g_sampling = rexp, g_density = dexp, alpha=.3, from=-5, to=5, rate=2)
 # rej1 <- rejection_sampling(5000, f = function(x) 4*x, g_sampling=rnorm, g_density=dnorm, alpha=.6, from=0, to=.5, mean=.5, sd=.25)
 # rej2 <- rejection_sampling(5000, f = function(x) 4-4*x, g_sampling = rnorm, g_density=dnorm, alpha=.6, from=.5, to=1, mean=.5, sd=.25)
 # plot(c(rej1$keep$f_targetX, rej2$keep$f_targetX)~c(rej1$keep$x_keep, rej2$keep$x_keep))

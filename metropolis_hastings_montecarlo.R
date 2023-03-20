@@ -19,7 +19,7 @@ metrop_hastings <- function(f_target, g_propsal_sample, g_propsal_compute, g_con
         x_prop <- g_propsal_sample(1, unlist(g_condition_prev), ...)
         g_condition_prop <- list(x_prop)
         names(g_condition_prop) <- g_condition_name
-        r <- f(x_prop)*g_propsal_compute(x0, unlist(g_condition_prop), ...)/(f(x0))*g_propsal_compute(x_prop, unlist(g_condition_prev), ...)
+        r <- f_target(x_prop)*g_propsal_compute(x0, unlist(g_condition_prop), ...)/(f_target(x0))*g_propsal_compute(x_prop, unlist(g_condition_prev), ...)
         if(r>=1){
             out_list <- append(out_list, x_prop)
         }else if(runif(1, 0, 1)<r){
@@ -32,9 +32,9 @@ metrop_hastings <- function(f_target, g_propsal_sample, g_propsal_compute, g_con
     return(out_list)
         
 }
-out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.1)
-out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.01)
-out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.001)
+# out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.1)
+# out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.01)
+# out <- metrop_hastings(function(x) exp(-x), g_propsal_sample = rnorm, g_propsal_compute = dnorm, g_condition_name = 'mean', sd=.001)
 
 unconditioned_metrop_hastings <- function(f_target, g_propsal_sample, g_propsal_compute, support_from=0, support_to=1, n_draws=1000, ...){
     #'@param f_target: the target function to draw from
@@ -53,7 +53,7 @@ unconditioned_metrop_hastings <- function(f_target, g_propsal_sample, g_propsal_
     out_list <- c()
     while(length(out_list)<n_draws){
         x_prop <- g_propsal_sample(1, ...)
-        r <- f(x_prop)*g_propsal_compute(x0, ...)/(f(x0))*g_propsal_compute(x_prop, ...)
+        r <- f_target(x_prop)*g_propsal_compute(x0, ...)/(f_target(x0))*g_propsal_compute(x_prop, ...)
         if(r>=1){
             out_list <- append(out_list, x_prop)
         }else if(runif(1, 0, 1)<r){
@@ -66,4 +66,4 @@ unconditioned_metrop_hastings <- function(f_target, g_propsal_sample, g_propsal_
     return(out_list)
     
 }
-unconditioned_metrop_hastings(function(x) exp(-x), g_propsal_sample = runif, g_propsal_compute = dunif, min=0, max=5)
+# unconditioned_metrop_hastings(function(x) exp(-x), g_propsal_sample = runif, g_propsal_compute = dunif, min=0, max=5)
