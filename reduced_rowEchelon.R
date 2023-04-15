@@ -67,12 +67,12 @@ row_reduced<- function(data){
 #                    4,11,24), nrow = 3) # fills columnwise
 # row_reduced(attempt)
 
-attempt <- matrix(c(4,-1,3,-1,5,4,2,-1,1,6,-3,3), nrow = 3)
-attempt[1,] <- attempt[1,] + attempt[2,]*4
-attempt[3,] <- attempt[2,]*3 + attempt[3,]
-attempt[3,] <- -1*attempt[1,] + attempt[3,]
-attempt[2,] <- attempt[2,]*-1
-t <- attempt[1,]
-attempt[1,] <- attempt[2,]
-attempt[2,] <- t
-attempt
+#attempt <- matrix(c(4,-1,3,-1,5,4,2,-1,1,6,-3,3), nrow = 3)
+#attempt[1,] <- attempt[1,] + attempt[2,]*4
+#attempt[3,] <- attempt[2,]*3 + attempt[3,]
+#attempt[3,] <- -1*attempt[1,] + attempt[3,]
+#attempt[2,] <- attempt[2,]*-1
+#t <- attempt[1,]
+#attempt[1,] <- attempt[2,]
+#attempt[2,] <- t
+#attempt

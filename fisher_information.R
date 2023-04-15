@@ -1,20 +1,20 @@
 # source('~/Learn_R/functions/hessian.R')
 # 
-# fisher_information <- function(gx, respect_to, data, sum=TRUE){
-#   # recall that fisher information can be rewritten as variance of first derivative of the log liklihood summed over x
-#       if(sum){
-#           f <- eval(deriv3(gx, names(respect_to)), as.list(respect_to))
-#           out_mat <- matrix(sum(attr(f, 'gradient')), length(respect_to), dimnames = list(respect_to))
-#       }else{
-#           f <- eval(deriv3(gx, names(respect_to)), as.list(respect_to))
-#           out_mat <- matrix(attr(f, 'gradient'), length(respect_to), dimnames = list(respect_to))
-#       }
-#   return(var(out_mat))
-# }
-# 
-# g <- expression(x^3-2*x*y-y^6)
-# y=2
-# fisher_information(g, respect_to = c('x'=1, 'y'=2), sum=FALSE)
+fisher_information <- function(gx, respect_to, data, sum=TRUE){
+  # recall that fisher information can be rewritten as variance of first derivative of the log liklihood summed over x
+      if(sum){
+          f <- eval(deriv3(gx, names(respect_to)), as.list(respect_to))
+          out_mat <- matrix(sum(attr(f, 'gradient')), length(respect_to), dimnames = list(respect_to))
+      }else{
+          f <- eval(deriv3(gx, names(respect_to)), as.list(respect_to))
+          out_mat <- matrix(attr(f, 'gradient'), length(respect_to), dimnames = list(respect_to))
+      }
+  return(var(out_mat))
+}
+
+g <- expression(x^3-2*x*y-y^6)
+y=2
+fisher_information(g, respect_to = c('x'=1, 'y'=2), sum=FALSE)
 # 
 # 
 # 

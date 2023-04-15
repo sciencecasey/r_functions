@@ -11,9 +11,9 @@ hessian_matrix <- function(gx, respect_to){
     return(out_mat)
 }
 
-# g <- expression(x^3-2*x*y-y^6)
-# h_g <- hessian_matrix(g, respect_to = c('x', 'y'))
-# h_g
+g <- expression(x^3-2*x*y-y^6)
+h_g <- hessian_matrix(g, respect_to = c('x', 'y'))
+h_g
 
 solve_hessian_matrix <- function(h, values){
     #'@param h: a hessian matrix where the expressions are saved as strings, as created using hessian_matrix
